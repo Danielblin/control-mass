@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historial de Conteos</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
+        .btn-primary { background: #27ae60; color: white; }
+        .btn-info { background: #3498db; color: white; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #27ae60; color: white; }
+        select, input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📊 Historial de Conteos</h2>
+        <a href="/user_pasillo" class="btn btn-primary">← Volver a mi pasillo</a>
+        <a href="/exportar_excel" class="btn btn-info">📎 Exportar a Excel</a>
+    </div>
+
+    <div class="card">
+        <h3>🔍 Filtros</h3>
+        <form method="GET">
+            <label>Producto:</label>
+            <select name="producto">
+                <option value="">Todos</option>
+                {% for p in productos %}
+                <option value="{{ p[0] }}" {% if producto_filtro == p[0] %}selected{% endif %}>{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <label>Fecha:</label>
+            <input type="date" name="fecha" value="{{ fecha_filtro }}">
+            <label>Límite:</label>
+            <select name="limite">
+                <option value="20" {% if limite==20 %}selected{% endif %}>20</option>
+                <option value="50" {% if limite==50 %}selected{% endif %}>50</option>
+                <option value="100" {% if limite==100 %}selected{% endif %}>100</option>
+                <option value="500" {% if limite==500 %}selected{% endif %}>500</option>
+            </select>
+            <button type="submit" class="btn btn-info">Filtrar</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <table>
+            <thead><tr><th>Fecha</th><th>Producto</th><th>Stock Pocket</th><th>Stock Contado</th><th>Diferencia</th><th>Usuario</th></tr></thead>
+            <tbody>
+                {% for c in conteos %}
+                <tr>
+                    <td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] }}</td>
+                    <td style="color: {% if c[4] < 0 %}red{% elif c[4] > 0 %}green{% else %}gray{% endif %}">{{ c[4] }}</td>
+                    <td>{{ c[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

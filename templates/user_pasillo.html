@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mi Pasillo - Control Mass</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; }
+        .header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        .alert { background: #ffeaa7; border-left: 5px solid #e74c3c; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+        .alert h3 { color: #e74c3c; margin-bottom: 10px; }
+        .menu { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-info { background: #3498db; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .producto-item { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        table { width: 100%; background: white; border-radius: 15px; overflow: hidden; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #27ae60; color: white; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .search-box { margin-bottom: 15px; }
+        .producto-info { flex: 1; }
+        .producto-stock { font-weight: bold; color: #27ae60; }
+        .codigo-barras { font-family: monospace; font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; display: inline-block; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+    <script>
+        function filtrarProductos() {
+            let input = document.getElementById('buscador').value.toLowerCase();
+            let items = document.getElementsByClassName('producto-select');
+            for (let i = 0; i < items.length; i++) {
+                let texto = items[i].textContent.toLowerCase();
+                items[i].style.display = texto.includes(input) ? '' : 'none';
+            }
+        }
+        function filtrarProductosLotes() {
+            let input = document.getElementById('buscadorLotes').value.toLowerCase();
+            let items = document.getElementsByClassName('producto-lote');
+            for (let i = 0; i < items.length; i++) {
+                let texto = items[i].textContent.toLowerCase();
+                items[i].style.display = texto.includes(input) ? '' : 'none';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Pasillo: {{ pasillo }}</h1>
+        <p>Usuario: {{ usuario }} | <a href="/logout" style="color:white;">Cerrar sesión</a></p>
+    </div>
+
+    {% if alertas %}
+    <div class="alert">
+        <h3>⚠️ ALERTAS DE VENCIMIENTO (próximos 7 días)</h3>
+        <ul>{% for a in alertas %}<li><strong>{{ a[0] }}</strong> - {{ a[2] }} unidades vencen el {{ a[1] }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <div class="menu">
+        <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
+    </div>
+
+    <div class="grid-2">
+        <!-- Registrar conteo diario con buscador -->
+        <div class="card">
+            <h3>🔄 Registrar conteo diario</h3>
+            <div class="search-box">
+                <input type="text" id="buscador" onkeyup="filtrarProductos()" placeholder="🔍 Buscar producto por nombre...">
+            </div>
+            <form method="POST" action="/registrar_conteo">
+                <div class="form-group">
+                    <label>Producto</label>
+                    <select name="codigo" required>
+                        <option value="">Selecciona producto</option>
+                        {% for p in productos %}
+                        <option class="producto-select" value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stock según Pocket</label>
+                    <input type="number" name="stock_pocket" required>
+                </div>
+                <div class="form-group">
+                    <label>Stock que contaste</label>
+                    <input type="number" name="stock_contado" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar conteo</button>
+            </form>
+            <div style="margin-top:15px;">
+                <a href="/ver_conteos" class="btn btn-info">📊 Ver historial de conteos (filtros)</a>
+            </div>
+        </div>
+
+        <!-- Registrar nuevo lote con buscador -->
+        <div class="card">
+            <h3>📦 Registrar nuevo lote (fecha vencimiento)</h3>
+            <div class="search-box">
+                <input type="text" id="buscadorLotes" onkeyup="filtrarProductosLotes()" placeholder="🔍 Buscar producto...">
+            </div>
+            <form method="POST" action="/registrar_lote">
+                <div class="form-group">
+                    <label>Producto</label>
+                    <select name="codigo" required>
+                        <option value="">Selecciona producto</option>
+                        {% for p in productos %}
+                        <option class="producto-lote" value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de vencimiento</label>
+                    <input type="date" name="fecha_vencimiento" required>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" name="cantidad" required>
+                </div>
+                <button type="submit" class="btn btn-info">Registrar lote</button>
+            </form>
+            <div style="margin-top:15px;">
+                <a href="#gestion-lotes" class="btn btn-warning" style="display:inline-block;">📋 Gestionar lotes por producto</a>
+            </div>
+        </div>
+
+        <!-- Registrar merma -->
+        <div class="card">
+            <h3>⚠️ Registrar merma (roto/vencido)</h3>
+            <form method="POST" action="/registrar_merma">
+                <div class="form-group">
+                    <label>Producto</label>
+                    <select name="codigo" required>
+                        <option value="">Selecciona producto</option>
+                        {% for p in productos %}
+                        <option value="{{ p[0] }}">{{ p[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" name="cantidad" required>
+                </div>
+                <div class="form-group">
+                    <label>Motivo</label>
+                    <select name="motivo">
+                        <option value="vencido">Vencido</option>
+                        <option value="roto">Roto</option>
+                        <option value="extraviado">Extraviado</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger">Registrar merma</button>
+            </form>
+        </div>
+
+        <!-- Agregar nuevo producto con UxB -->
+        <div class="card">
+            <h3>➕ Agregar nuevo producto</h3>
+            <form method="POST" action="/agregar_producto">
+                <div class="form-group">
+                    <label>Código de barras</label>
+                    <input type="text" name="codigo" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del producto</label>
+                    <input type="text" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Precio</label>
+                    <input type="number" step="0.01" name="precio" required>
+                </div>
+                <div class="form-group">
+                    <label>UxB (Unidades por caja/paquete)</label>
+                    <input type="text" name="uxb" placeholder="Ej: CJ 24 UN, PQ 20 UN">
+                </div>
+                <input type="hidden" name="pasillo" value="{{ pasillo }}">
+                <button type="submit" class="btn btn-primary">Agregar producto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sección de gestión de lotes -->
+    <div id="gestion-lotes" class="card">
+        <h3>📋 Gestionar lotes por producto</h3>
+        <div style="margin-bottom:15px;">
+            <p>Selecciona un producto para ver, editar o eliminar sus lotes:</p>
+        </div>
+        <table style="width:100%;">
+            <thead>
+                <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+                {% for p in productos_con_lotes %}
+                <tr>
+                    <td>{{ p[1] }}</td>
+                    <td><span class="codigo-barras">{{ p[0] }}</span></td>
+                    <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-info btn-sm">📦 Gestionar lotes</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if productos_con_lotes|length == 0 %}
+        <p style="margin-top:10px; color:#666;">⚠️ No hay productos con lotes registrados.</p>
+        {% endif %}
+    </div>
+
+    <!-- Lista de productos con stock = último conteo, diferencia y botón eliminar -->
+    <div id="productos-lista" class="card">
+        <h3>📋 Productos de tu pasillo</h3>
+        <div style="margin-bottom:15px;">
+            <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
+        </div>
+        {% for p in productos %}
+        <div class="producto-item">
+            <div class="producto-info">
+                <strong>{{ p[1] }}</strong><br>
+                📍 Código: <span class="codigo-barras">{{ p[0] }}</span><br>
+                💰 Precio: S/ {{ p[2] }} | 📦 UxB: {{ p[3] if p[3] else 'No registrado' }}<br>
+                🎯 Stock actual (último conteo): <span class="producto-stock">{{ p[4] }} unidades</span><br>
+                📊 Diferencia último conteo: 
+                <span style="color: {% if p[5] < 0 %}red{% elif p[5] > 0 %}green{% else %}gray{% endif %}; font-weight: bold;">
+                    {% if p[5] < 0 %}
+                        🔻 {{ p[5] }} (faltante)
+                    {% elif p[5] > 0 %}
+                        🔺 +{{ p[5] }} (sobrante)
+                    {% else %}
+                        ✅ 0 (correcto)
+                    {% endif %}
+                </span>
+            </div>
+            <div>
+                <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
