@@ -10,7 +10,10 @@ import os
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_mass_2026'
 
-crear_base_datos()
+
+# ❌ IMPORTANTE: ya no se ejecuta aquí directo
+# crear_base_datos()
+
 
 @app.route('/')
 def index():
@@ -58,7 +61,15 @@ def admin_panel():
     cursor.execute("SELECT SUM(cantidad) FROM mermas WHERE fecha = date('now')")
     mermas_hoy = cursor.fetchone()[0] or 0
     conn.close()
-    return render_template('admin.html', usuarios=usuarios, total_productos=total_productos, alertas_vencimiento=alertas_vencimiento, mermas_hoy=mermas_hoy)
+    
+    return render_template(
+        'admin.html',
+        usuarios=usuarios,
+        total_productos=total_productos,
+        alertas_vencimiento=alertas_vencimiento,
+        mermas_hoy=mermas_hoy
+    )
+
 
 @app.route('/crear_usuario', methods=['POST'])
 def crear_usuario_route():
@@ -72,6 +83,7 @@ def crear_usuario_route():
         return redirect(url_for('admin_panel'))
     else:
         return "❌ Error: el usuario ya existe"
+
 
 @app.route('/cambiar_password/<int:user_id>', methods=['POST'])
 def cambiar_password(user_id):
@@ -88,12 +100,14 @@ def cambiar_password(user_id):
     
     return redirect(url_for('admin_panel'))
 
+
 @app.route('/eliminar_usuario/<int:user_id>')
 def eliminar_usuario_route(user_id):
     if 'user_id' not in session or session['user_rol'] != 'admin':
         return redirect(url_for('login'))
     eliminar_usuario(user_id)
     return redirect(url_for('admin_panel'))
+
 
 @app.route('/user_pasillo')
 def user_pasillo():
@@ -104,9 +118,9 @@ def user_pasillo():
     cursor = conn.cursor()
     cursor.execute("SELECT codigo, nombre, precio, uxb FROM productos WHERE pasillo=?", (pasillo,))
     productos_raw = cursor.fetchall()
+    
     productos = []
     for p in productos_raw:
-        # Obtener el último conteo (stock contado y diferencia)
         cursor.execute("""
             SELECT stock_contado, diferencia 
             FROM conteos 
@@ -122,6 +136,7 @@ def user_pasillo():
             stock = 0
             diferencia = 0
         productos.append((p[0], p[1], p[2], p[3], stock, diferencia))
+    
     cursor.execute("""
         SELECT p.nombre, l.fecha_vencimiento, l.cantidad, l.codigo_producto 
         FROM lotes l 
@@ -131,7 +146,6 @@ def user_pasillo():
     """, (pasillo,))
     alertas = cursor.fetchall()
     
-    # Obtener productos con lotes para la sección de gestión
     productos_con_lotes = []
     for p in productos_raw:
         cursor.execute("SELECT COUNT(*) FROM lotes WHERE codigo_producto=?", (p[0],))
@@ -139,12 +153,16 @@ def user_pasillo():
         productos_con_lotes.append((p[0], p[1], tiene_lotes))
     
     conn.close()
-    return render_template('user_pasillo.html', 
-                         pasillo=pasillo, 
-                         productos=productos,
-                         alertas=alertas,
-                         productos_con_lotes=productos_con_lotes,
-                         usuario=session['user_nombre'])
+    
+    return render_template(
+        'user_pasillo.html',
+        pasillo=pasillo,
+        productos=productos,
+        alertas=alertas,
+        productos_con_lotes=productos_con_lotes,
+        usuario=session['user_nombre']
+    )
+
 
 @app.route('/registrar_conteo', methods=['POST'])
 def registrar_conteo():
@@ -154,12 +172,20 @@ def registrar_conteo():
     stock_contado = int(request.form['stock_contado'])
     stock_pocket = int(request.form['stock_pocket'])
     diferencia = stock_contado - stock_pocket
+    ahora = datetime.now()
+    fecha_actual = ahora.date().isoformat()
+    hora_actual = ahora.strftime('%H:%M:%S')
+    
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO conteos (fecha, codigo_producto, stock_pocket, stock_contado, diferencia, usuario) VALUES (?, ?, ?, ?, ?, ?)", (date.today(), codigo, stock_pocket, stock_contado, diferencia, session['user_nombre']))
+    cursor.execute("""
+        INSERT INTO conteos (fecha, codigo_producto, stock_pocket, stock_contado, diferencia, usuario, hora) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (fecha_actual, codigo, stock_pocket, stock_contado, diferencia, session['user_nombre'], hora_actual))
     conn.commit()
     conn.close()
     return redirect(url_for('user_pasillo'))
+
 
 @app.route('/registrar_lote', methods=['POST'])
 def registrar_lote():
@@ -175,6 +201,7 @@ def registrar_lote():
     conn.close()
     return redirect(url_for('user_pasillo'))
 
+
 @app.route('/registrar_merma', methods=['POST'])
 def registrar_merma():
     if 'user_id' not in session:
@@ -188,6 +215,7 @@ def registrar_merma():
     conn.commit()
     conn.close()
     return redirect(url_for('user_pasillo'))
+
 
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
@@ -231,6 +259,7 @@ def agregar_producto():
             conn.close()
             return f"❌ Error al crear el producto: {str(e)}"
 
+
 @app.route('/exportar_excel')
 def exportar_excel():
     if 'user_id' not in session:
@@ -241,6 +270,7 @@ def exportar_excel():
         archivo = exportar_reporte_pasillo(session['user_pasillo'], f'reporte_{session["user_pasillo"]}_{date.today()}.xlsx')
     return send_file(archivo, as_attachment=True)
 
+
 @app.route('/exportar_completo')
 def exportar_completo():
     if 'user_id' not in session or session['user_rol'] != 'admin':
@@ -248,36 +278,89 @@ def exportar_completo():
     archivo = exportar_reporte_completo()
     return send_file(archivo, as_attachment=True)
 
+
 @app.route('/ver_conteos')
 def ver_conteos():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     pasillo = session['user_pasillo']
+    
+    # Obtener filtros
     producto_filtro = request.args.get('producto', '')
     fecha_filtro = request.args.get('fecha', '')
-    limite = request.args.get('limite', 20)
+    usuario_filtro = request.args.get('usuario', '')
+    limite = request.args.get('limite', 50)
     try:
         limite = int(limite)
     except:
-        limite = 20
+        limite = 50
+    
     conn = obtener_conexion()
     cursor = conn.cursor()
+    
+    # Lista de productos para el filtro
     cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
     productos_lista = cursor.fetchall()
-    query = "SELECT c.fecha, p.nombre, c.stock_pocket, c.stock_contado, c.diferencia, c.usuario FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=?"
+    
+    # Lista de usuarios que han hecho conteos (para el filtro)
+    cursor.execute("SELECT DISTINCT usuario FROM conteos WHERE usuario IS NOT NULL")
+    usuarios_lista = [row[0] for row in cursor.fetchall()]
+    
+    # Construir query
+    query = """
+        SELECT c.fecha, c.hora, p.nombre, c.stock_pocket, c.stock_contado, c.diferencia, c.usuario 
+        FROM conteos c 
+        JOIN productos p ON c.codigo_producto = p.codigo 
+        WHERE p.pasillo=?
+    """
     params = [pasillo]
+    
     if producto_filtro:
         query += " AND p.codigo=?"
         params.append(producto_filtro)
     if fecha_filtro:
         query += " AND c.fecha=?"
         params.append(fecha_filtro)
-    query += " ORDER BY c.fecha DESC LIMIT ?"
+    if usuario_filtro:
+        query += " AND c.usuario=?"
+        params.append(usuario_filtro)
+    
+    query += " ORDER BY c.fecha DESC, c.hora DESC LIMIT ?"
     params.append(limite)
+    
     cursor.execute(query, params)
     conteos = cursor.fetchall()
+    
+    # Calcular estadísticas
+    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
+    total_registros = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia > 0", (pasillo,))
+    sobrantes = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia < 0", (pasillo,))
+    faltantes = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia = 0", (pasillo,))
+    sin_diferencia = cursor.fetchone()[0]
+    
     conn.close()
-    return render_template('ver_conteos.html', conteos=conteos, productos=productos_lista, producto_filtro=producto_filtro, fecha_filtro=fecha_filtro, limite=limite)
+    
+    return render_template('ver_conteos.html', 
+                         conteos=conteos, 
+                         productos=productos_lista, 
+                         usuarios=usuarios_lista,
+                         producto_filtro=producto_filtro, 
+                         fecha_filtro=fecha_filtro,
+                         usuario_filtro=usuario_filtro,
+                         limite=limite,
+                         total_registros=total_registros,
+                         sobrantes=sobrantes,
+                         faltantes=faltantes,
+                         sin_diferencia=sin_diferencia,
+                         pasillo=pasillo,
+                         usuario=session['user_nombre'])
+
 
 @app.route('/ver_lotes/<codigo>')
 def ver_lotes(codigo):
@@ -296,6 +379,7 @@ def ver_lotes(codigo):
     lotes = cursor.fetchall()
     conn.close()
     return render_template('ver_lotes.html', lotes=lotes, producto=producto, codigo=codigo, orden=orden, hoy=hoy)
+
 
 @app.route('/eliminar_producto/<codigo>')
 def eliminar_producto(codigo):
@@ -318,6 +402,7 @@ def eliminar_producto(codigo):
     conn.close()
     
     return redirect(url_for('user_pasillo'))
+
 
 # ========== NUEVAS RUTAS PARA GESTIÓN DE LOTES ==========
 
@@ -352,6 +437,7 @@ def gestionar_lotes(codigo):
                          lotes=lotes,
                          hoy=hoy)
 
+
 @app.route('/editar_lote/<int:lote_id>', methods=['POST'])
 def editar_lote(lote_id):
     if 'user_id' not in session:
@@ -373,6 +459,7 @@ def editar_lote(lote_id):
     
     return redirect(url_for('gestionar_lotes', codigo=codigo))
 
+
 @app.route('/eliminar_lote/<int:lote_id>')
 def eliminar_lote(lote_id):
     if 'user_id' not in session:
@@ -392,6 +479,7 @@ def eliminar_lote(lote_id):
     
     return redirect(url_for('gestionar_lotes', codigo=codigo))
 
+
 # ========== FIN NUEVAS RUTAS ==========
 
 @app.route('/logout')
@@ -399,8 +487,11 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Esto es para PythonAnywhere
+
 application = app
 
+
 if __name__ == '__main__':
+    # ✅ aquí recién se ejecuta en local (NO en Render)
+    crear_base_datos()
     app.run(debug=True, host='0.0.0.0', port=5000)
