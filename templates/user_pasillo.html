@@ -1,35 +1,284 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Mi Pasillo - Control Mass</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mi Pasillo - Control Mass</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; }
-        .header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        .alert { background: #ffeaa7; border-left: 5px solid #e74c3c; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
-        .alert h3 { color: #e74c3c; margin-bottom: 10px; }
-        .menu { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-primary { background: #27ae60; color: white; }
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-info { background: #3498db; color: white; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            color: #1a1a2e;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .header a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        /* Tarjetas de estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .stat-card.total .stat-number { color: #2a5298; }
+        .stat-card.diferencia .stat-number { color: #e67e22; }
+        .stat-card.correcto .stat-number { color: #27ae60; }
+
+        /* Alertas */
+        .alert {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .alert h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .alert ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        /* Grid de formularios */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-left: 4px solid #2a5298;
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; }
+
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; }
+
         .btn-warning { background: #f39c12; color: white; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .producto-item { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        table { width: 100%; background: white; border-radius: 15px; overflow: hidden; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #27ae60; color: white; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .search-box { margin-bottom: 15px; }
-        .producto-info { flex: 1; }
-        .producto-stock { font-weight: bold; color: #27ae60; }
-        .codigo-barras { font-family: monospace; font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; display: inline-block; }
-        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .btn-warning:hover { background: #e67e22; }
+
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.8rem;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        /* Lista de productos estilo tarjeta */
+        .productos-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .producto-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: background 0.2s;
+        }
+
+        .producto-card:hover {
+            background: #eef2f7;
+        }
+
+        .producto-info {
+            flex: 1;
+        }
+
+        .producto-nombre {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .producto-detalle {
+            font-size: 0.75rem;
+            color: #666;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .codigo-barras {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .stock-actual {
+            color: #2a5298;
+            font-weight: bold;
+        }
+
+        .diferencia {
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .diferencia.negativa { color: #e74c3c; }
+        .diferencia.positiva { color: #27ae60; }
+        .diferencia.cero { color: #6c757d; }
+
+        .producto-acciones {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Tablas responsivas */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #2a5298;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .producto-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .producto-acciones { width: 100%; justify-content: flex-end; }
+        }
     </style>
     <script>
         function filtrarProductos() {
@@ -53,9 +302,26 @@
 <body>
     <div class="header">
         <h1>📦 Pasillo: {{ pasillo }}</h1>
-        <p>Usuario: {{ usuario }} | <a href="/logout" style="color:white;">Cerrar sesión</a></p>
+        <p>👤 Usuario: {{ usuario }} | <a href="/logout">Cerrar sesión</a></p>
     </div>
 
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-number">{{ productos|length }}</div>
+            <div class="stat-label">Productos</div>
+        </div>
+        <div class="stat-card diferencia">
+            <div class="stat-number">{{ productos|selectattr('5', '!=', 0)|list|length }}</div>
+            <div class="stat-label">Con diferencia</div>
+        </div>
+        <div class="stat-card correcto">
+            <div class="stat-number">{{ productos|selectattr('5', '==', 0)|list|length }}</div>
+            <div class="stat-label">Correcto</div>
+        </div>
+    </div>
+
+    <!-- Alertas -->
     {% if alertas %}
     <div class="alert">
         <h3>⚠️ ALERTAS DE VENCIMIENTO (próximos 7 días)</h3>
@@ -63,12 +329,9 @@
     </div>
     {% endif %}
 
-    <div class="menu">
-        <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
-    </div>
-
-    <div class="grid-2">
-        <!-- Registrar conteo diario con buscador -->
+    <!-- Formularios en grid -->
+    <div class="form-grid">
+        <!-- Registrar conteo -->
         <div class="card">
             <h3>🔄 Registrar conteo diario</h3>
             <div class="search-box">
@@ -86,22 +349,22 @@
                 </div>
                 <div class="form-group">
                     <label>Stock según Pocket</label>
-                    <input type="number" name="stock_pocket" required>
+                    <input type="number" name="stock_pocket" placeholder="0" required>
                 </div>
                 <div class="form-group">
                     <label>Stock que contaste</label>
-                    <input type="number" name="stock_contado" required>
+                    <input type="number" name="stock_contado" placeholder="0" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Registrar conteo</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">Registrar conteo</button>
             </form>
-            <div style="margin-top:15px;">
-                <a href="/ver_conteos" class="btn btn-info">📊 Ver historial de conteos (filtros)</a>
+            <div style="margin-top:15px; text-align:center;">
+                <a href="/ver_conteos" class="btn btn-info" style="width:100%">📊 Ver historial de conteos</a>
             </div>
         </div>
 
-        <!-- Registrar nuevo lote con buscador -->
+        <!-- Registrar lote -->
         <div class="card">
-            <h3>📦 Registrar nuevo lote (fecha vencimiento)</h3>
+            <h3>📦 Registrar nuevo lote</h3>
             <div class="search-box">
                 <input type="text" id="buscadorLotes" onkeyup="filtrarProductosLotes()" placeholder="🔍 Buscar producto...">
             </div>
@@ -121,18 +384,18 @@
                 </div>
                 <div class="form-group">
                     <label>Cantidad</label>
-                    <input type="number" name="cantidad" required>
+                    <input type="number" name="cantidad" placeholder="0" required>
                 </div>
-                <button type="submit" class="btn btn-info">Registrar lote</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">Registrar lote</button>
             </form>
-            <div style="margin-top:15px;">
-                <a href="#gestion-lotes" class="btn btn-warning" style="display:inline-block;">📋 Gestionar lotes por producto</a>
+            <div style="margin-top:15px; text-align:center;">
+                <a href="#gestion-lotes" class="btn btn-info" style="width:100%">📋 Gestionar lotes</a>
             </div>
         </div>
 
         <!-- Registrar merma -->
         <div class="card">
-            <h3>⚠️ Registrar merma (roto/vencido)</h3>
+            <h3>⚠️ Registrar merma</h3>
             <form method="POST" action="/registrar_merma">
                 <div class="form-group">
                     <label>Producto</label>
@@ -145,7 +408,7 @@
                 </div>
                 <div class="form-group">
                     <label>Cantidad</label>
-                    <input type="number" name="cantidad" required>
+                    <input type="number" name="cantidad" placeholder="0" required>
                 </div>
                 <div class="form-group">
                     <label>Motivo</label>
@@ -155,90 +418,96 @@
                         <option value="extraviado">Extraviado</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-danger">Registrar merma</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">Registrar merma</button>
             </form>
         </div>
 
-        <!-- Agregar nuevo producto con UxB -->
+        <!-- Agregar producto -->
         <div class="card">
             <h3>➕ Agregar nuevo producto</h3>
             <form method="POST" action="/agregar_producto">
                 <div class="form-group">
                     <label>Código de barras</label>
-                    <input type="text" name="codigo" required>
+                    <input type="text" name="codigo" placeholder="Ej: 7750243082365" required>
                 </div>
                 <div class="form-group">
                     <label>Nombre del producto</label>
-                    <input type="text" name="nombre" required>
+                    <input type="text" name="nombre" placeholder="Nombre" required>
                 </div>
                 <div class="form-group">
-                    <label>Precio</label>
-                    <input type="number" step="0.01" name="precio" required>
+                    <label>Precio (S/)</label>
+                    <input type="number" step="0.01" name="precio" placeholder="0.00" required>
                 </div>
                 <div class="form-group">
                     <label>UxB (Unidades por caja/paquete)</label>
-                    <input type="text" name="uxb" placeholder="Ej: CJ 24 UN, PQ 20 UN">
+                    <input type="text" name="uxb" placeholder="Ej: CJ 24 UN">
                 </div>
                 <input type="hidden" name="pasillo" value="{{ pasillo }}">
-                <button type="submit" class="btn btn-primary">Agregar producto</button>
+                <button type="submit" class="btn btn-primary" style="width:100%">Agregar producto</button>
             </form>
         </div>
     </div>
 
-    <!-- Sección de gestión de lotes -->
+    <!-- Gestión de lotes -->
     <div id="gestion-lotes" class="card">
         <h3>📋 Gestionar lotes por producto</h3>
-        <div style="margin-bottom:15px;">
-            <p>Selecciona un producto para ver, editar o eliminar sus lotes:</p>
+        <div class="table-responsive">
+            <table style="width:100%">
+                <thead>
+                    <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in productos_con_lotes %}
+                    <tr>
+                        <td>{{ p[1] }}</td>
+                        <td><span class="codigo-barras">{{ p[0] }}</span></td>
+                        <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-info btn-sm">📦 Gestionar lotes</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <table style="width:100%;">
-            <thead>
-                <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
-            </thead>
-            <tbody>
-                {% for p in productos_con_lotes %}
-                <tr>
-                    <td>{{ p[1] }}</td>
-                    <td><span class="codigo-barras">{{ p[0] }}</span></td>
-                    <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-info btn-sm">📦 Gestionar lotes</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
         {% if productos_con_lotes|length == 0 %}
         <p style="margin-top:10px; color:#666;">⚠️ No hay productos con lotes registrados.</p>
         {% endif %}
     </div>
 
-    <!-- Lista de productos con stock = último conteo, diferencia y botón eliminar -->
-    <div id="productos-lista" class="card">
+    <!-- Lista de productos estilo tarjeta -->
+    <div class="card">
         <h3>📋 Productos de tu pasillo</h3>
         <div style="margin-bottom:15px;">
             <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
         </div>
-        {% for p in productos %}
-        <div class="producto-item">
-            <div class="producto-info">
-                <strong>{{ p[1] }}</strong><br>
-                📍 Código: <span class="codigo-barras">{{ p[0] }}</span><br>
-                💰 Precio: S/ {{ p[2] }} | 📦 UxB: {{ p[3] if p[3] else 'No registrado' }}<br>
-                🎯 Stock actual (último conteo): <span class="producto-stock">{{ p[4] }} unidades</span><br>
-                📊 Diferencia último conteo: 
-                <span style="color: {% if p[5] < 0 %}red{% elif p[5] > 0 %}green{% else %}gray{% endif %}; font-weight: bold;">
-                    {% if p[5] < 0 %}
-                        🔻 {{ p[5] }} (faltante)
-                    {% elif p[5] > 0 %}
-                        🔺 +{{ p[5] }} (sobrante)
-                    {% else %}
-                        ✅ 0 (correcto)
-                    {% endif %}
-                </span>
+        <div class="productos-grid">
+            {% for p in productos %}
+            <div class="producto-card">
+                <div class="producto-info">
+                    <div class="producto-nombre">{{ p[1] }}</div>
+                    <div class="producto-detalle">
+                        <span>📍 <span class="codigo-barras">{{ p[0] }}</span></span>
+                        <span>💰 S/ {{ p[2] }}</span>
+                        <span>📦 {{ p[3] if p[3] else 'No registrado' }}</span>
+                        <span>🎯 <span class="stock-actual">{{ p[4] }} unidades</span></span>
+                    </div>
+                    <div class="diferencia 
+                        {% if p[5] < 0 %}negativa
+                        {% elif p[5] > 0 %}positiva
+                        {% else %}cero{% endif %}">
+                        {% if p[5] < 0 %}
+                            🔻 {{ p[5] }} (faltante)
+                        {% elif p[5] > 0 %}
+                            🔺 +{{ p[5] }} (sobrante)
+                        {% else %}
+                            ✅ 0 (correcto)
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="producto-acciones">
+                    <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
+                </div>
             </div>
-            <div>
-                <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </body>
 </html>
