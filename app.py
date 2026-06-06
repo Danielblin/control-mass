@@ -173,9 +173,13 @@ def registrar_conteo():
     stock_contado = int(request.form['stock_contado'])
     stock_pocket = int(request.form['stock_pocket'])
     diferencia = stock_contado - stock_pocket
-    ahora = datetime.now()
-    fecha_actual = ahora.date().isoformat()
-    hora_actual = ahora.strftime('%H:%M:%S')
+    
+    # Hora de Perú (UTC-5)
+    from datetime import timezone, timedelta
+    tz_peru = timezone(timedelta(hours=-5))
+    ahora_peru = datetime.now(tz_peru)
+    fecha_actual = ahora_peru.date().isoformat()
+    hora_actual = ahora_peru.strftime('%H:%M:%S')
     
     conn = obtener_conexion()
     cursor = conn.cursor()
