@@ -6,6 +6,7 @@ from datetime import date, datetime
 import sqlite3
 import pandas as pd
 import os
+import traceback
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_mass_2026'
@@ -281,85 +282,88 @@ def exportar_completo():
 
 @app.route('/ver_conteos')
 def ver_conteos():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    pasillo = session['user_pasillo']
-    
-    # Obtener filtros
-    producto_filtro = request.args.get('producto', '')
-    fecha_filtro = request.args.get('fecha', '')
-    usuario_filtro = request.args.get('usuario', '')
-    limite = request.args.get('limite', 50)
     try:
-        limite = int(limite)
-    except:
-        limite = 50
-    
-    conn = obtener_conexion()
-    cursor = conn.cursor()
-    
-    # Lista de productos para el filtro
-    cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
-    productos_lista = cursor.fetchall()
-    
-    # Lista de usuarios que han hecho conteos (para el filtro)
-    cursor.execute("SELECT DISTINCT usuario FROM conteos WHERE usuario IS NOT NULL")
-    usuarios_lista = [row[0] for row in cursor.fetchall()]
-    
-    # Construir query
-    query = """
-        SELECT c.fecha, c.hora, p.nombre, c.stock_pocket, c.stock_contado, c.diferencia, c.usuario 
-        FROM conteos c 
-        JOIN productos p ON c.codigo_producto = p.codigo 
-        WHERE p.pasillo=?
-    """
-    params = [pasillo]
-    
-    if producto_filtro:
-        query += " AND p.codigo=?"
-        params.append(producto_filtro)
-    if fecha_filtro:
-        query += " AND c.fecha=?"
-        params.append(fecha_filtro)
-    if usuario_filtro:
-        query += " AND c.usuario=?"
-        params.append(usuario_filtro)
-    
-    query += " ORDER BY c.fecha DESC, c.hora DESC LIMIT ?"
-    params.append(limite)
-    
-    cursor.execute(query, params)
-    conteos = cursor.fetchall()
-    
-    # Calcular estadísticas
-    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
-    total_registros = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia > 0", (pasillo,))
-    sobrantes = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia < 0", (pasillo,))
-    faltantes = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia = 0", (pasillo,))
-    sin_diferencia = cursor.fetchone()[0]
-    
-    conn.close()
-    
-    return render_template('ver_conteos.html', 
-                         conteos=conteos, 
-                         productos=productos_lista, 
-                         usuarios=usuarios_lista,
-                         producto_filtro=producto_filtro, 
-                         fecha_filtro=fecha_filtro,
-                         usuario_filtro=usuario_filtro,
-                         limite=limite,
-                         total_registros=total_registros,
-                         sobrantes=sobrantes,
-                         faltantes=faltantes,
-                         sin_diferencia=sin_diferencia,
-                         pasillo=pasillo,
-                         usuario=session['user_nombre'])
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        pasillo = session['user_pasillo']
+        
+        # Obtener filtros
+        producto_filtro = request.args.get('producto', '')
+        fecha_filtro = request.args.get('fecha', '')
+        usuario_filtro = request.args.get('usuario', '')
+        limite = request.args.get('limite', 50)
+        try:
+            limite = int(limite)
+        except:
+            limite = 50
+        
+        conn = obtener_conexion()
+        cursor = conn.cursor()
+        
+        # Lista de productos para el filtro
+        cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
+        productos_lista = cursor.fetchall()
+        
+        # Lista de usuarios que han hecho conteos (para el filtro)
+        cursor.execute("SELECT DISTINCT usuario FROM conteos WHERE usuario IS NOT NULL")
+        usuarios_lista = [row[0] for row in cursor.fetchall()]
+        
+        # Construir query
+        query = """
+            SELECT c.fecha, c.hora, p.nombre, c.stock_pocket, c.stock_contado, c.diferencia, c.usuario 
+            FROM conteos c 
+            JOIN productos p ON c.codigo_producto = p.codigo 
+            WHERE p.pasillo=?
+        """
+        params = [pasillo]
+        
+        if producto_filtro:
+            query += " AND p.codigo=?"
+            params.append(producto_filtro)
+        if fecha_filtro:
+            query += " AND c.fecha=?"
+            params.append(fecha_filtro)
+        if usuario_filtro:
+            query += " AND c.usuario=?"
+            params.append(usuario_filtro)
+        
+        query += " ORDER BY c.fecha DESC, c.hora DESC LIMIT ?"
+        params.append(limite)
+        
+        cursor.execute(query, params)
+        conteos = cursor.fetchall()
+        
+        # Calcular estadísticas
+        cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
+        total_registros = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia > 0", (pasillo,))
+        sobrantes = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia < 0", (pasillo,))
+        faltantes = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=? AND c.diferencia = 0", (pasillo,))
+        sin_diferencia = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return render_template('ver_conteos.html', 
+                             conteos=conteos, 
+                             productos=productos_lista, 
+                             usuarios=usuarios_lista,
+                             producto_filtro=producto_filtro, 
+                             fecha_filtro=fecha_filtro,
+                             usuario_filtro=usuario_filtro,
+                             limite=limite,
+                             total_registros=total_registros,
+                             sobrantes=sobrantes,
+                             faltantes=faltantes,
+                             sin_diferencia=sin_diferencia,
+                             pasillo=pasillo,
+                             usuario=session['user_nombre'])
+    except Exception as e:
+        return f"<h3>❌ ERROR EN VER_CONTEOS</h3><p><strong>{str(e)}</strong></p><pre>{traceback.format_exc()}</pre>"
 
 
 @app.route('/ver_lotes/<codigo>')
