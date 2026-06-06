@@ -173,13 +173,9 @@ def registrar_conteo():
     stock_contado = int(request.form['stock_contado'])
     stock_pocket = int(request.form['stock_pocket'])
     diferencia = stock_contado - stock_pocket
-    
-    # Hora de Perú (UTC-5)
-    from datetime import timezone, timedelta
-    tz_peru = timezone(timedelta(hours=-5))
-    ahora_peru = datetime.now(tz_peru)
-    fecha_actual = ahora_peru.date().isoformat()
-    hora_actual = ahora_peru.strftime('%H:%M:%S')
+    ahora = datetime.now()
+    fecha_actual = ahora.date().isoformat()
+    hora_actual = ahora.strftime('%H:%M:%S')
     
     conn = obtener_conexion()
     cursor = conn.cursor()
@@ -498,6 +494,8 @@ def logout():
 
 application = app
 
+# Railway deployment fix - 2026
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
 if __name__ == '__main__':
     # ✅ aquí recién se ejecuta en local (NO en Render)
