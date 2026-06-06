@@ -1,63 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Historial de Conteos</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Historial de Conteos - Control Mass</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
-        .btn-primary { background: #27ae60; color: white; }
-        .btn-info { background: #3498db; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #1a1a2e; }
+        
+        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; transform: translateY(-2px); }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        .stat-label { color: #666; font-size: 0.8rem; margin-top: 5px; }
+        .stat-card.total .stat-number { color: #2a5298; }
+        .stat-card.sobrantes .stat-number { color: #27ae60; }
+        .stat-card.faltantes .stat-number { color: #e74c3c; }
+        .stat-card.cero .stat-number { color: #6c757d; }
+        
+        .card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-group { display: inline-block; margin: 5px 10px 5px 0; }
+        label { font-weight: 600; font-size: 0.8rem; color: #555; margin-right: 5px; }
+        select, input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.85rem; }
+        .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #27ae60; color: white; }
-        select, input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #2a5298; color: white; font-weight: 600; }
+        .diferencia-negativa { color: #e74c3c; font-weight: bold; }
+        .diferencia-positiva { color: #27ae60; font-weight: bold; }
+        .diferencia-cero { color: #6c757d; }
+        
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            th, td { padding: 8px; font-size: 0.7rem; }
+            .filter-group { display: block; margin-bottom: 10px; }
+            select, input { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="header">
         <h2>📊 Historial de Conteos</h2>
+        <p style="opacity:0.9;">Pasillo: {{ pasillo }} · {{ usuario }}</p>
+    </div>
+    
+    <div>
         <a href="/user_pasillo" class="btn btn-primary">← Volver a mi pasillo</a>
         <a href="/exportar_excel" class="btn btn-info">📎 Exportar a Excel</a>
     </div>
-
+    
+    <!-- Tarjetas de estadísticas -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-number">{{ total_registros }}</div>
+            <div class="stat-label">Registros totales</div>
+        </div>
+        <div class="stat-card sobrantes">
+            <div class="stat-number">{{ sobrantes }}</div>
+            <div class="stat-label">Sobrantes</div>
+        </div>
+        <div class="stat-card faltantes">
+            <div class="stat-number">{{ faltantes }}</div>
+            <div class="stat-label">Faltantes</div>
+        </div>
+        <div class="stat-card cero">
+            <div class="stat-number">{{ sin_diferencia }}</div>
+            <div class="stat-label">Sin diferencia</div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
     <div class="card">
         <h3>🔍 Filtros</h3>
-        <form method="GET">
-            <label>Producto:</label>
-            <select name="producto">
-                <option value="">Todos</option>
-                {% for p in productos %}
-                <option value="{{ p[0] }}" {% if producto_filtro == p[0] %}selected{% endif %}>{{ p[1] }}</option>
-                {% endfor %}
-            </select>
-            <label>Fecha:</label>
-            <input type="date" name="fecha" value="{{ fecha_filtro }}">
-            <label>Límite:</label>
-            <select name="limite">
-                <option value="20" {% if limite==20 %}selected{% endif %}>20</option>
-                <option value="50" {% if limite==50 %}selected{% endif %}>50</option>
-                <option value="100" {% if limite==100 %}selected{% endif %}>100</option>
-                <option value="500" {% if limite==500 %}selected{% endif %}>500</option>
-            </select>
-            <button type="submit" class="btn btn-info">Filtrar</button>
+        <form method="GET" id="filtrosForm">
+            <div class="filter-group">
+                <label>Producto:</label>
+                <select name="producto">
+                    <option value="">Todos</option>
+                    {% for p in productos %}
+                    <option value="{{ p[0] }}" {% if producto_filtro == p[0] %}selected{% endif %}>{{ p[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Fecha:</label>
+                <input type="date" name="fecha" value="{{ fecha_filtro }}">
+            </div>
+            <div class="filter-group">
+                <label>Usuario:</label>
+                <select name="usuario">
+                    <option value="">Todos</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u }}" {% if usuario_filtro == u %}selected{% endif %}>{{ u }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Límite:</label>
+                <select name="limite">
+                    <option value="20" {% if limite==20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if limite==50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if limite==100 %}selected{% endif %}>100</option>
+                    <option value="500" {% if limite==500 %}selected{% endif %}>500</option>
+                </select>
+            </div>
+            <div style="margin-top:15px;">
+                <button type="submit" class="btn btn-info">🔍 Filtrar</button>
+                <button type="button" class="btn btn-secondary" onclick="limpiarFiltros()">🗑️ Limpiar</button>
+            </div>
         </form>
     </div>
-
+    
+    <!-- Tabla de resultados -->
     <div class="card">
-        <table>
-            <thead><tr><th>Fecha</th><th>Producto</th><th>Stock Pocket</th><th>Stock Contado</th><th>Diferencia</th><th>Usuario</th></tr></thead>
-            <tbody>
-                {% for c in conteos %}
-                <tr>
-                    <td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] }}</td>
-                    <td style="color: {% if c[4] < 0 %}red{% elif c[4] > 0 %}green{% else %}gray{% endif %}">{{ c[4] }}</td>
-                    <td>{{ c[5] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>📋 Resultados ({{ conteos|length }} registros)</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Producto</th>
+                        <th>Stock Pocket</th>
+                        <th>Stock Contado</th>
+                        <th>Diferencia</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in conteos %}
+                    <tr>
+                        <td>{{ c[0] }}</td>
+                        <td>{{ c[1] }}</td>
+                        <td>{{ c[2] }}</td>
+                        <td>{{ c[3] }}</td>
+                        <td>{{ c[4] }}</td>
+                        <td class="
+                            {% if c[5] < 0 %}diferencia-negativa
+                            {% elif c[5] > 0 %}diferencia-positiva
+                            {% else %}diferencia-cero{% endif %}">
+                            {% if c[5] < 0 %}{{ c[5] }}{% elif c[5] > 0 %}+{{ c[5] }}{% else %}{{ c[5] }}{% endif %}
+                        </td>
+                        <td>{{ c[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+    
+    <script>
+        function limpiarFiltros() {
+            // Limpiar todos los selects e inputs del formulario
+            var selects = document.querySelectorAll('#filtrosForm select');
+            var inputs = document.querySelectorAll('#filtrosForm input');
+            
+            selects.forEach(function(select) {
+                select.value = '';
+            });
+            
+            inputs.forEach(function(input) {
+                if (input.type === 'date') {
+                    input.value = '';
+                }
+            });
+            
+            // Enviar el formulario con los filtros vacíos
+            document.getElementById('filtrosForm').submit();
+        }
+    </script>
 </body>
 </html>
