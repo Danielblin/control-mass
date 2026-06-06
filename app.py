@@ -494,6 +494,8 @@ def logout():
 
 application = app
 
+# Railway deployment fix - 2026
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
 if __name__ == '__main__':
     # ✅ aquí recién se ejecuta en local (NO en Render)
