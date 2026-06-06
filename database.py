@@ -45,7 +45,7 @@ def crear_base_datos():
         )
     ''')
     
-    # Tabla de conteos
+    # Tabla de conteos (CON COLUMNA HORA)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS conteos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +54,8 @@ def crear_base_datos():
             stock_pocket INTEGER,
             stock_contado INTEGER,
             diferencia INTEGER,
-            usuario TEXT
+            usuario TEXT,
+            hora TEXT
         )
     ''')
     
@@ -81,6 +82,12 @@ def crear_base_datos():
     if not cursor.fetchone():
         cursor.execute("INSERT INTO usuarios (nombre, password, rol, pasillo_asignado) VALUES (?, ?, ?, ?)",
                        ('Ana', 'ana123', 'user', 'Lácteos'))
+    
+    # Si la tabla conteos ya existía sin la columna hora, agrégala
+    try:
+        cursor.execute("ALTER TABLE conteos ADD COLUMN hora TEXT")
+    except:
+        pass  # La columna ya existe
     
     conn.commit()
     conn.close()
