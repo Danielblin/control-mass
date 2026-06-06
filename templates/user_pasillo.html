@@ -15,10 +15,11 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
             padding: 20px;
+            padding-bottom: 80px; /* Espacio para el menú inferior */
             color: #1a1a2e;
         }
 
-        /* Header */
+        /* Header con botón de ajustes */
         .header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
@@ -26,21 +27,43 @@
             border-radius: 20px;
             margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 5px;
         }
 
         .header p {
             opacity: 0.9;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .header a {
             color: #ffd700;
             text-decoration: none;
+        }
+
+        .settings-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         /* Tarjetas de estadísticas */
@@ -58,6 +81,7 @@
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: transform 0.2s;
+            cursor: pointer;
         }
 
         .stat-card:hover {
@@ -97,91 +121,6 @@
         .alert ul {
             margin-left: 20px;
             color: #856404;
-        }
-
-        /* Grid de formularios */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: box-shadow 0.2s;
-        }
-
-        .card:hover {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .card h3 {
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            border-left: 4px solid #2a5298;
-            padding-left: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #555;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            transition: border 0.2s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.1s;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary { background: #2a5298; color: white; }
-        .btn-primary:hover { background: #1e3c72; }
-
-        .btn-info { background: #17a2b8; color: white; }
-        .btn-info:hover { background: #138496; }
-
-        .btn-warning { background: #f39c12; color: white; }
-        .btn-warning:hover { background: #e67e22; }
-
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-danger:hover { background: #c0392b; }
-
-        .btn-sm {
-            padding: 5px 12px;
-            font-size: 0.8rem;
-        }
-
-        .search-box {
-            margin-bottom: 15px;
         }
 
         /* Lista de productos estilo tarjeta */
@@ -251,58 +190,164 @@
             gap: 8px;
         }
 
-        /* Tablas responsivas */
-        .table-responsive {
-            overflow-x: auto;
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-block;
+            text-align: center;
         }
 
-        table {
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; }
+
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+
+        .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+
+        /* Menú inferior fijo */
+        .bottom-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 20px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            border-radius: 25px 25px 0 0;
+            z-index: 100;
+        }
+
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #f0f2f5;
+        }
+
+        .menu-icon {
+            font-size: 1.8rem;
+        }
+
+        .menu-label {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .menu-item.active .menu-label {
+            color: #2a5298;
+            font-weight: bold;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 500px;
             width: 100%;
-            border-collapse: collapse;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
         }
 
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        th {
-            background: #2a5298;
-            color: white;
+        .modal-header h3 {
+            font-size: 1.3rem;
+            border-left: 4px solid #2a5298;
+            padding-left: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            body { padding: 12px; }
-            .form-grid { grid-template-columns: 1fr; }
+            body { padding: 12px; padding-bottom: 80px; }
             .producto-card { flex-direction: column; align-items: flex-start; gap: 10px; }
             .producto-acciones { width: 100%; justify-content: flex-end; }
+            .stat-number { font-size: 1.8rem; }
         }
     </style>
-    <script>
-        function filtrarProductos() {
-            let input = document.getElementById('buscador').value.toLowerCase();
-            let items = document.getElementsByClassName('producto-select');
-            for (let i = 0; i < items.length; i++) {
-                let texto = items[i].textContent.toLowerCase();
-                items[i].style.display = texto.includes(input) ? '' : 'none';
-            }
-        }
-        function filtrarProductosLotes() {
-            let input = document.getElementById('buscadorLotes').value.toLowerCase();
-            let items = document.getElementsByClassName('producto-lote');
-            for (let i = 0; i < items.length; i++) {
-                let texto = items[i].textContent.toLowerCase();
-                items[i].style.display = texto.includes(input) ? '' : 'none';
-            }
-        }
-    </script>
 </head>
 <body>
+    <!-- Header con ajustes -->
     <div class="header">
-        <h1>📦 Pasillo: {{ pasillo }}</h1>
-        <p>👤 Usuario: {{ usuario }} | <a href="/logout">Cerrar sesión</a></p>
+        <div>
+            <h1>📦 Pasillo: {{ pasillo }}</h1>
+            <p>👤 Usuario: {{ usuario }} | <a href="/logout" style="color:#ffd700;">Cerrar sesión</a></p>
+        </div>
+        <button class="settings-btn" onclick="alert('⚙️ Ajustes en desarrollo')">⚙️</button>
     </div>
 
     <!-- Estadísticas -->
@@ -329,13 +374,93 @@
     </div>
     {% endif %}
 
-    <!-- Formularios en grid -->
-    <div class="form-grid">
-        <!-- Registrar conteo -->
-        <div class="card">
-            <h3>🔄 Registrar conteo diario</h3>
-            <div class="search-box">
-                <input type="text" id="buscador" onkeyup="filtrarProductos()" placeholder="🔍 Buscar producto por nombre...">
+    <!-- Gestión de lotes -->
+    <div id="gestion-lotes" class="card" style="background:white; padding:20px; border-radius:20px; margin-bottom:20px;">
+        <h3>📋 Gestionar lotes por producto</h3>
+        <div class="table-responsive">
+            <table style="width:100%">
+                <thead>
+                    <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in productos_con_lotes %}
+                    <tr>
+                        <td>{{ p[1] }}</td>
+                        <td><span class="codigo-barras">{{ p[0] }}</span></td>
+                        <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-primary btn-sm">📦 Gestionar lotes</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if productos_con_lotes|length == 0 %}
+        <p style="margin-top:10px; color:#666;">⚠️ No hay productos con lotes registrados.</p>
+        {% endif %}
+    </div>
+
+    <!-- Lista de productos -->
+    <div class="card" style="background:white; padding:20px; border-radius:20px;">
+        <h3>📋 Productos de tu pasillo</h3>
+        <div style="margin-bottom:15px;">
+            <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
+        </div>
+        <div class="productos-grid">
+            {% for p in productos %}
+            <div class="producto-card">
+                <div class="producto-info">
+                    <div class="producto-nombre">{{ p[1] }}</div>
+                    <div class="producto-detalle">
+                        <span>💰 S/ {{ p[2] }}</span>
+                        <span>📦 {{ p[3] if p[3] else 'No registrado' }}</span>
+                        <span>🎯 <span class="stock-actual">{{ p[4] }} unidades</span></span>
+                    </div>
+                    <div class="diferencia 
+                        {% if p[5] < 0 %}negativa
+                        {% elif p[5] > 0 %}positiva
+                        {% else %}cero{% endif %}">
+                        {% if p[5] < 0 %}
+                            🔻 {{ p[5] }} (faltante)
+                        {% elif p[5] > 0 %}
+                            🔺 +{{ p[5] }} (sobrante)
+                        {% else %}
+                            ✅ 0 (correcto)
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="producto-acciones">
+                    <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Menú inferior -->
+    <div class="bottom-menu">
+        <button class="menu-item" onclick="abrirModal('conteo')">
+            <div class="menu-icon">🔄</div>
+            <div class="menu-label">Contar</div>
+        </button>
+        <button class="menu-item" onclick="abrirModal('lote')">
+            <div class="menu-icon">📦</div>
+            <div class="menu-label">Lotes</div>
+        </button>
+        <button class="menu-item" onclick="abrirModal('merma')">
+            <div class="menu-icon">⚠️</div>
+            <div class="menu-label">Merma</div>
+        </button>
+        <button class="menu-item" onclick="abrirModal('producto')">
+            <div class="menu-icon">➕</div>
+            <div class="menu-label">Productos</div>
+        </button>
+    </div>
+
+    <!-- MODAL: Registrar conteo -->
+    <div id="modal-conteo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔄 Registrar conteo diario</h3>
+                <button class="close-modal" onclick="cerrarModal('conteo')">✖</button>
             </div>
             <form method="POST" action="/registrar_conteo">
                 <div class="form-group">
@@ -343,7 +468,7 @@
                     <select name="codigo" required>
                         <option value="">Selecciona producto</option>
                         {% for p in productos %}
-                        <option class="producto-select" value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
+                        <option value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -358,15 +483,17 @@
                 <button type="submit" class="btn btn-primary" style="width:100%">Registrar conteo</button>
             </form>
             <div style="margin-top:15px; text-align:center;">
-                <a href="/ver_conteos" class="btn btn-info" style="width:100%">📊 Ver historial de conteos</a>
+                <a href="/ver_conteos" class="btn btn-info" style="background:#17a2b8; color:white; padding:10px; border-radius:12px; text-decoration:none;">📊 Ver historial de conteos</a>
             </div>
         </div>
+    </div>
 
-        <!-- Registrar lote -->
-        <div class="card">
-            <h3>📦 Registrar nuevo lote</h3>
-            <div class="search-box">
-                <input type="text" id="buscadorLotes" onkeyup="filtrarProductosLotes()" placeholder="🔍 Buscar producto...">
+    <!-- MODAL: Registrar lote -->
+    <div id="modal-lote" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📦 Registrar nuevo lote</h3>
+                <button class="close-modal" onclick="cerrarModal('lote')">✖</button>
             </div>
             <form method="POST" action="/registrar_lote">
                 <div class="form-group">
@@ -374,7 +501,7 @@
                     <select name="codigo" required>
                         <option value="">Selecciona producto</option>
                         {% for p in productos %}
-                        <option class="producto-lote" value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
+                        <option value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -388,14 +515,16 @@
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%">Registrar lote</button>
             </form>
-            <div style="margin-top:15px; text-align:center;">
-                <a href="#gestion-lotes" class="btn btn-info" style="width:100%">📋 Gestionar lotes</a>
-            </div>
         </div>
+    </div>
 
-        <!-- Registrar merma -->
-        <div class="card">
-            <h3>⚠️ Registrar merma</h3>
+    <!-- MODAL: Registrar merma -->
+    <div id="modal-merma" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Registrar merma</h3>
+                <button class="close-modal" onclick="cerrarModal('merma')">✖</button>
+            </div>
             <form method="POST" action="/registrar_merma">
                 <div class="form-group">
                     <label>Producto</label>
@@ -421,10 +550,15 @@
                 <button type="submit" class="btn btn-primary" style="width:100%">Registrar merma</button>
             </form>
         </div>
+    </div>
 
-        <!-- Agregar producto -->
-        <div class="card">
-            <h3>➕ Agregar nuevo producto</h3>
+    <!-- MODAL: Agregar producto -->
+    <div id="modal-producto" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Agregar nuevo producto</h3>
+                <button class="close-modal" onclick="cerrarModal('producto')">✖</button>
+            </div>
             <form method="POST" action="/agregar_producto">
                 <div class="form-group">
                     <label>Código de barras</label>
@@ -448,66 +582,19 @@
         </div>
     </div>
 
-    <!-- Gestión de lotes -->
-    <div id="gestion-lotes" class="card">
-        <h3>📋 Gestionar lotes por producto</h3>
-        <div class="table-responsive">
-            <table style="width:100%">
-                <thead>
-                    <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
-                </thead>
-                <tbody>
-                    {% for p in productos_con_lotes %}
-                    <tr>
-                        <td>{{ p[1] }}</td>
-                        <td><span class="codigo-barras">{{ p[0] }}</span></td>
-                        <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-info btn-sm">📦 Gestionar lotes</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if productos_con_lotes|length == 0 %}
-        <p style="margin-top:10px; color:#666;">⚠️ No hay productos con lotes registrados.</p>
-        {% endif %}
-    </div>
-
-    <!-- Lista de productos estilo tarjeta -->
-    <div class="card">
-        <h3>📋 Productos de tu pasillo</h3>
-        <div style="margin-bottom:15px;">
-            <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
-        </div>
-        <div class="productos-grid">
-            {% for p in productos %}
-            <div class="producto-card">
-                <div class="producto-info">
-                    <div class="producto-nombre">{{ p[1] }}</div>
-                    <div class="producto-detalle">
-                        <span>📍 <span class="codigo-barras">{{ p[0] }}</span></span>
-                        <span>💰 S/ {{ p[2] }}</span>
-                        <span>📦 {{ p[3] if p[3] else 'No registrado' }}</span>
-                        <span>🎯 <span class="stock-actual">{{ p[4] }} unidades</span></span>
-                    </div>
-                    <div class="diferencia 
-                        {% if p[5] < 0 %}negativa
-                        {% elif p[5] > 0 %}positiva
-                        {% else %}cero{% endif %}">
-                        {% if p[5] < 0 %}
-                            🔻 {{ p[5] }} (faltante)
-                        {% elif p[5] > 0 %}
-                            🔺 +{{ p[5] }} (sobrante)
-                        {% else %}
-                            ✅ 0 (correcto)
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="producto-acciones">
-                    <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    <script>
+        function abrirModal(tipo) {
+            document.getElementById('modal-' + tipo).style.display = 'flex';
+        }
+        function cerrarModal(tipo) {
+            document.getElementById('modal-' + tipo).style.display = 'none';
+        }
+        // Cerrar modal si se hace clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
