@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from database import obtener_conexion, crear_base_datos
 from auth import verificar_login, listar_usuarios, crear_usuario, eliminar_usuario
 from reports import exportar_reporte_pasillo, exportar_reporte_general, exportar_reporte_completo
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import sqlite3
 import pandas as pd
 import os
@@ -173,9 +173,12 @@ def registrar_conteo():
     stock_contado = int(request.form['stock_contado'])
     stock_pocket = int(request.form['stock_pocket'])
     diferencia = stock_contado - stock_pocket
-    ahora = datetime.now()
-    fecha_actual = ahora.date().isoformat()
-    hora_actual = ahora.strftime('%H:%M:%S')
+    
+    # Ajustar a hora de Perú (UTC-5)
+    ahora_utc = datetime.utcnow()
+    ahora_peru = ahora_utc - timedelta(hours=5)
+    fecha_actual = ahora_peru.date().isoformat()
+    hora_actual = ahora_peru.strftime('%H:%M:%S')
     
     conn = obtener_conexion()
     cursor = conn.cursor()
@@ -494,8 +497,6 @@ def logout():
 
 application = app
 
-# Railway deployment fix - 2026
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
 if __name__ == '__main__':
     # ✅ aquí recién se ejecuta en local (NO en Render)
