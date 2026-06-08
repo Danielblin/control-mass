@@ -107,7 +107,25 @@
             font-weight: 400;
         }
 
-        /* Botón */
+        /* Botón mostrar/ocultar contraseña */
+        .password-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            margin-left: 8px;
+            color: #adb5bd;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        /* Botón de login */
         .btn-login {
             width: 100%;
             padding: 14px;
@@ -187,6 +205,10 @@
                 padding: 12px;
                 font-size: 15px;
             }
+
+            .password-toggle {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -198,34 +220,52 @@
             </div>
         </div>
         <h1>Control Mass</h1>
-        <div class="subtitle">Tiendas Mass - Control de Pasillos</div>
+        <div class="subtitle">Ingresa tus credenciales</div>
 
         <form method="POST">
             <div class="form-group">
                 <div class="input-group">
                     <span class="input-icon">👤</span>
-                    <input type="text" name="nombre" placeholder="Tu usuario" required autocomplete="username">
+                    <input type="text" name="nombre" placeholder="Ingresa tu usuario" required autocomplete="username">
                 </div>
             </div>
             <div class="form-group">
                 <div class="input-group">
                     <span class="input-icon">🔒</span>
-                    <input type="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
+                    <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+                    <button type="button" class="password-toggle" id="togglePassword" tabindex="-1">
+                        👁️
+                    </button>
                 </div>
             </div>
             <button type="submit" class="btn-login">
-                → Ingresar
+                Ingresar
             </button>
         </form>
 
         <div class="info">
-            <div>📋</div>
+            <div>📋 Accesos de prueba:</div>
             <div>
-                <span class="user-demo"></span>
+                <span class="user-demo">admin / admin123</span>
                 <span class="info-line">|</span>
-                <span class="user-demo">.</span>
+                <span class="user-demo">Ana / ana123</span>
             </div>
         </div>
     </div>
+
+    <script>
+        // Función para mostrar/ocultar contraseña
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            // Cambiar el tipo de input entre password y text
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Cambiar el ícono del ojito (opcional)
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
 </body>
 </html>
