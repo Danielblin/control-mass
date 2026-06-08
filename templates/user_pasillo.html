@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Mi Pasillo - Control Mass</title>
+    <!-- Font Awesome 6 (íconos profesionales) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -15,7 +17,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
             padding: 20px;
-            padding-bottom: 80px; /* Espacio para el menú inferior */
+            padding-bottom: 80px;
             color: #1a1a2e;
         }
 
@@ -37,9 +39,17 @@
             margin-bottom: 5px;
         }
 
+        .header h1 i {
+            margin-right: 10px;
+        }
+
         .header p {
             opacity: 0.9;
             font-size: 0.8rem;
+        }
+
+        .header p i {
+            margin-right: 6px;
         }
 
         .header a {
@@ -50,16 +60,17 @@
         .settings-btn {
             background: rgba(255,255,255,0.2);
             border: none;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             cursor: pointer;
             padding: 10px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
+            color: white;
         }
 
         .settings-btn:hover {
@@ -99,6 +110,10 @@
             margin-top: 5px;
         }
 
+        .stat-label i {
+            margin-right: 5px;
+        }
+
         .stat-card.total .stat-number { color: #2a5298; }
         .stat-card.diferencia .stat-number { color: #e67e22; }
         .stat-card.correcto .stat-number { color: #27ae60; }
@@ -118,9 +133,54 @@
             font-size: 1rem;
         }
 
+        .alert h3 i {
+            margin-right: 8px;
+        }
+
         .alert ul {
             margin-left: 20px;
             color: #856404;
+        }
+
+        /* Tarjeta de gestión de lotes */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-left: 4px solid #2a5298;
+            padding-left: 12px;
+        }
+
+        .card h3 i {
+            margin-right: 8px;
+            color: #2a5298;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #2a5298;
+            color: white;
         }
 
         /* Lista de productos estilo tarjeta */
@@ -160,7 +220,12 @@
             color: #666;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .producto-detalle span i {
+            margin-right: 4px;
+            width: 14px;
         }
 
         .codigo-barras {
@@ -185,6 +250,10 @@
         .diferencia.positiva { color: #27ae60; }
         .diferencia.cero { color: #6c757d; }
 
+        .diferencia i {
+            margin-right: 4px;
+        }
+
         .producto-acciones {
             display: flex;
             gap: 8px;
@@ -199,13 +268,16 @@
             transition: background 0.2s, transform 0.1s;
             display: inline-block;
             text-align: center;
+            text-decoration: none;
         }
 
         .btn-primary { background: #2a5298; color: white; }
         .btn-primary:hover { background: #1e3c72; }
+        .btn-primary i { margin-right: 6px; }
 
         .btn-danger { background: #e74c3c; color: white; }
         .btn-danger:hover { background: #c0392b; }
+        .btn-danger i { margin-right: 6px; }
 
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
 
@@ -234,6 +306,7 @@
             padding: 8px 12px;
             border-radius: 12px;
             transition: background 0.2s;
+            color: #6c757d;
         }
 
         .menu-item:hover {
@@ -241,17 +314,19 @@
         }
 
         .menu-icon {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
         }
 
         .menu-label {
             font-size: 0.7rem;
             margin-top: 4px;
-            color: #666;
+        }
+
+        .menu-item.active {
+            color: #2a5298;
         }
 
         .menu-item.active .menu-label {
-            color: #2a5298;
             font-weight: bold;
         }
 
@@ -294,6 +369,11 @@
             padding-left: 10px;
         }
 
+        .modal-header h3 i {
+            margin-right: 8px;
+            color: #2a5298;
+        }
+
         .close-modal {
             background: none;
             border: none;
@@ -331,12 +411,24 @@
             margin-bottom: 15px;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             body { padding: 12px; padding-bottom: 80px; }
             .producto-card { flex-direction: column; align-items: flex-start; gap: 10px; }
             .producto-acciones { width: 100%; justify-content: flex-end; }
             .stat-number { font-size: 1.8rem; }
+            .menu-icon { font-size: 1.3rem; }
         }
     </style>
 </head>
@@ -344,41 +436,43 @@
     <!-- Header con ajustes -->
     <div class="header">
         <div>
-            <h1>📦 Pasillo: {{ pasillo }}</h1>
-            <p>👤 Usuario: {{ usuario }} | <a href="/logout" style="color:#ffd700;">Cerrar sesión</a></p>
+            <h1><i class="fas fa-warehouse"></i> Pasillo: {{ pasillo }}</h1>
+            <p><i class="fas fa-user-circle"></i> Usuario: {{ usuario }} | <a href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></p>
         </div>
-        <button class="settings-btn" onclick="alert('⚙️ Ajustes en desarrollo')">⚙️</button>
+        <button class="settings-btn" onclick="alert('⚙️ Ajustes en desarrollo')">
+            <i class="fas fa-cog"></i>
+        </button>
     </div>
 
     <!-- Estadísticas -->
     <div class="stats-grid">
         <div class="stat-card total">
             <div class="stat-number">{{ productos|length }}</div>
-            <div class="stat-label">Productos</div>
+            <div class="stat-label"><i class="fas fa-boxes"></i> Productos</div>
         </div>
         <div class="stat-card diferencia">
             <div class="stat-number">{{ productos|selectattr('5', '!=', 0)|list|length }}</div>
-            <div class="stat-label">Con diferencia</div>
+            <div class="stat-label"><i class="fas fa-chart-line"></i> Con diferencia</div>
         </div>
         <div class="stat-card correcto">
             <div class="stat-number">{{ productos|selectattr('5', '==', 0)|list|length }}</div>
-            <div class="stat-label">Correcto</div>
+            <div class="stat-label"><i class="fas fa-check-circle"></i> Correcto</div>
         </div>
     </div>
 
     <!-- Alertas -->
     {% if alertas %}
     <div class="alert">
-        <h3>⚠️ ALERTAS DE VENCIMIENTO (próximos 7 días)</h3>
+        <h3><i class="fas fa-exclamation-triangle"></i> ALERTAS DE VENCIMIENTO (próximos 7 días)</h3>
         <ul>{% for a in alertas %}<li><strong>{{ a[0] }}</strong> - {{ a[2] }} unidades vencen el {{ a[1] }}</li>{% endfor %}</ul>
     </div>
     {% endif %}
 
     <!-- Gestión de lotes -->
-    <div id="gestion-lotes" class="card" style="background:white; padding:20px; border-radius:20px; margin-bottom:20px;">
-        <h3>📋 Gestionar lotes por producto</h3>
+    <div class="card">
+        <h3><i class="fas fa-pallet"></i> Gestionar lotes por producto</h3>
         <div class="table-responsive">
-            <table style="width:100%">
+            <table>
                 <thead>
                     <tr><th>Producto</th><th>Código</th><th>Acción</th></tr>
                 </thead>
@@ -387,22 +481,22 @@
                     <tr>
                         <td>{{ p[1] }}</td>
                         <td><span class="codigo-barras">{{ p[0] }}</span></td>
-                        <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-primary btn-sm">📦 Gestionar lotes</a></td>
+                        <td><a href="/gestionar_lotes/{{ p[0] }}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Gestionar lotes</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% if productos_con_lotes|length == 0 %}
-        <p style="margin-top:10px; color:#666;">⚠️ No hay productos con lotes registrados.</p>
+        <p style="margin-top:10px; color:#666;"><i class="fas fa-info-circle"></i> No hay productos con lotes registrados.</p>
         {% endif %}
     </div>
 
     <!-- Lista de productos -->
-    <div class="card" style="background:white; padding:20px; border-radius:20px;">
-        <h3>📋 Productos de tu pasillo</h3>
+    <div class="card">
+        <h3><i class="fas fa-clipboard-list"></i> Productos de tu pasillo</h3>
         <div style="margin-bottom:15px;">
-            <a href="/exportar_excel" class="btn btn-primary">📎 Exportar mi reporte a Excel</a>
+            <a href="/exportar_excel" class="btn btn-primary"><i class="fas fa-file-excel"></i> Exportar mi reporte a Excel</a>
         </div>
         <div class="productos-grid">
             {% for p in productos %}
@@ -410,25 +504,25 @@
                 <div class="producto-info">
                     <div class="producto-nombre">{{ p[1] }}</div>
                     <div class="producto-detalle">
-                        <span>💰 S/ {{ p[2] }}</span>
-                        <span>📦 {{ p[3] if p[3] else 'No registrado' }}</span>
-                        <span>🎯 <span class="stock-actual">{{ p[4] }} unidades</span></span>
+                        <span><i class="fas fa-tag"></i> S/ {{ p[2] }}</span>
+                        <span><i class="fas fa-cube"></i> {{ p[3] if p[3] else 'No registrado' }}</span>
+                        <span><i class="fas fa-box"></i> <span class="stock-actual">{{ p[4] }} unidades</span></span>
                     </div>
                     <div class="diferencia 
                         {% if p[5] < 0 %}negativa
                         {% elif p[5] > 0 %}positiva
                         {% else %}cero{% endif %}">
                         {% if p[5] < 0 %}
-                            🔻 {{ p[5] }} (faltante)
+                            <i class="fas fa-arrow-down"></i> {{ p[5] }} (faltante)
                         {% elif p[5] > 0 %}
-                            🔺 +{{ p[5] }} (sobrante)
+                            <i class="fas fa-arrow-up"></i> +{{ p[5] }} (sobrante)
                         {% else %}
-                            ✅ 0 (correcto)
+                            <i class="fas fa-check"></i> 0 (correcto)
                         {% endif %}
                     </div>
                 </div>
                 <div class="producto-acciones">
-                    <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')">🗑️ Eliminar</a>
+                    <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')"><i class="fas fa-trash-alt"></i> Eliminar</a>
                 </div>
             </div>
             {% endfor %}
@@ -438,19 +532,19 @@
     <!-- Menú inferior -->
     <div class="bottom-menu">
         <button class="menu-item" onclick="abrirModal('conteo')">
-            <div class="menu-icon">🔄</div>
+            <div class="menu-icon"><i class="fas fa-clipboard-list"></i></div>
             <div class="menu-label">Contar</div>
         </button>
         <button class="menu-item" onclick="abrirModal('lote')">
-            <div class="menu-icon">📦</div>
+            <div class="menu-icon"><i class="fas fa-boxes"></i></div>
             <div class="menu-label">Lotes</div>
         </button>
         <button class="menu-item" onclick="abrirModal('merma')">
-            <div class="menu-icon">⚠️</div>
+            <div class="menu-icon"><i class="fas fa-trash-alt"></i></div>
             <div class="menu-label">Merma</div>
         </button>
         <button class="menu-item" onclick="abrirModal('producto')">
-            <div class="menu-icon">➕</div>
+            <div class="menu-icon"><i class="fas fa-plus-circle"></i></div>
             <div class="menu-label">Productos</div>
         </button>
     </div>
@@ -459,8 +553,8 @@
     <div id="modal-conteo" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔄 Registrar conteo diario</h3>
-                <button class="close-modal" onclick="cerrarModal('conteo')">✖</button>
+                <h3><i class="fas fa-clipboard-list"></i> Registrar conteo diario</h3>
+                <button class="close-modal" onclick="cerrarModal('conteo')"><i class="fas fa-times"></i></button>
             </div>
             <form method="POST" action="/registrar_conteo">
                 <div class="form-group">
@@ -480,10 +574,10 @@
                     <label>Stock que contaste</label>
                     <input type="number" name="stock_contado" placeholder="0" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Registrar conteo</button>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Registrar conteo</button>
             </form>
             <div style="margin-top:15px; text-align:center;">
-                <a href="/ver_conteos" class="btn btn-info" style="background:#17a2b8; color:white; padding:10px; border-radius:12px; text-decoration:none;">📊 Ver historial de conteos</a>
+                <a href="/ver_conteos" class="btn btn-info" style="background:#17a2b8; color:white; padding:10px; border-radius:12px; text-decoration:none; display:inline-block;"><i class="fas fa-chart-bar"></i> Ver historial de conteos</a>
             </div>
         </div>
     </div>
@@ -492,8 +586,8 @@
     <div id="modal-lote" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📦 Registrar nuevo lote</h3>
-                <button class="close-modal" onclick="cerrarModal('lote')">✖</button>
+                <h3><i class="fas fa-boxes"></i> Registrar nuevo lote</h3>
+                <button class="close-modal" onclick="cerrarModal('lote')"><i class="fas fa-times"></i></button>
             </div>
             <form method="POST" action="/registrar_lote">
                 <div class="form-group">
@@ -513,7 +607,7 @@
                     <label>Cantidad</label>
                     <input type="number" name="cantidad" placeholder="0" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Registrar lote</button>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Registrar lote</button>
             </form>
         </div>
     </div>
@@ -522,8 +616,8 @@
     <div id="modal-merma" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚠️ Registrar merma</h3>
-                <button class="close-modal" onclick="cerrarModal('merma')">✖</button>
+                <h3><i class="fas fa-trash-alt"></i> Registrar merma</h3>
+                <button class="close-modal" onclick="cerrarModal('merma')"><i class="fas fa-times"></i></button>
             </div>
             <form method="POST" action="/registrar_merma">
                 <div class="form-group">
@@ -547,7 +641,7 @@
                         <option value="extraviado">Extraviado</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Registrar merma</button>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Registrar merma</button>
             </form>
         </div>
     </div>
@@ -556,8 +650,8 @@
     <div id="modal-producto" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>➕ Agregar nuevo producto</h3>
-                <button class="close-modal" onclick="cerrarModal('producto')">✖</button>
+                <h3><i class="fas fa-plus-circle"></i> Agregar nuevo producto</h3>
+                <button class="close-modal" onclick="cerrarModal('producto')"><i class="fas fa-times"></i></button>
             </div>
             <form method="POST" action="/agregar_producto">
                 <div class="form-group">
@@ -577,7 +671,7 @@
                     <input type="text" name="uxb" placeholder="Ej: CJ 24 UN">
                 </div>
                 <input type="hidden" name="pasillo" value="{{ pasillo }}">
-                <button type="submit" class="btn btn-primary" style="width:100%">Agregar producto</button>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Agregar producto</button>
             </form>
         </div>
     </div>
@@ -589,7 +683,6 @@
         function cerrarModal(tipo) {
             document.getElementById('modal-' + tipo).style.display = 'none';
         }
-        // Cerrar modal si se hace clic fuera del contenido
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
