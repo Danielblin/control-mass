@@ -1,101 +1,298 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <title>Gestionar Lotes - {{ producto[0] }}</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <!-- Font Awesome 6 (íconos profesionales) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; padding: 20px; }
-        .header { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
-        .btn-primary { background: #27ae60; color: white; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f0f2f5; 
+            padding: 20px; 
+            color: #1a1a2e;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        /* Modo oscuro */
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .card {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode table {
+            background: #2d2d44;
+        }
+        
+        body.dark-mode th {
+            background: #4a6a9a;
+        }
+        
+        body.dark-mode td {
+            border-bottom-color: #4a4a6a;
+        }
+        
+        body.dark-mode .codigo-barras {
+            background: #4a4a6a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode input, body.dark-mode select {
+            background: #3a3a5a;
+            border-color: #5a5a7a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .alerta {
+            background: #3a3a2a;
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 20px; 
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        body.dark-mode .header {
+            background: linear-gradient(135deg, #2a2a4a 0%, #3a3a6a 100%);
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: inline-block; 
+            margin: 5px; 
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; transform: translateY(-2px); }
         .btn-danger { background: #e74c3c; color: white; }
-        .btn-info { background: #3498db; color: white; }
+        .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; transform: translateY(-2px); }
         .btn-warning { background: #f39c12; color: white; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-warning:hover { background: #e67e22; transform: translateY(-2px); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-left: 4px solid #2a5298;
+            padding-left: 12px;
+        }
+        
+        .card h3 i {
+            margin-right: 8px;
+            color: #2a5298;
+        }
+        
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #3498db; color: white; }
-        .alerta { background: #ffeaa7; border-left: 5px solid #e74c3c; }
-        .codigo-barras { font-family: monospace; font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; display: inline-block; }
-        .form-editar { display: inline-flex; gap: 5px; align-items: center; }
-        .form-editar input { width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        body.dark-mode label { color: #b0b0c0; }
+        input, select { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            font-size: 0.9rem;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #eee; 
+        }
+        th { 
+            background: #2a5298; 
+            color: white; 
+            font-weight: 600;
+        }
+        .alerta { 
+            background: #fff3cd; 
+            border-left: 5px solid #ffc107; 
+        }
+        .codigo-barras { 
+            font-family: monospace; 
+            font-size: 12px; 
+            color: #666; 
+            background: #f0f0f0; 
+            padding: 2px 6px; 
+            border-radius: 8px; 
+            display: inline-block; 
+        }
+        .form-editar { 
+            display: inline-flex; 
+            gap: 5px; 
+            align-items: center; 
+        }
+        .form-editar input { 
+            width: 80px; 
+            padding: 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+        }
         .vencido { color: #e74c3c; font-weight: bold; }
         .vigente { color: #27ae60; }
+        
+        /* Botón modo oscuro flotante */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .dark-mode-toggle:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            th, td { padding: 8px; font-size: 0.75rem; }
+            .form-editor input { width: 60px; }
+            .btn { padding: 8px 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>📦 Gestionar Lotes</h1>
-        <p>Producto: <strong>{{ producto[0] }}</strong></p>
-        <p>Código: <span class="codigo-barras">{{ codigo }}</span></p>
-        <a href="/user_pasillo" class="btn btn-primary">← Volver a mi pasillo</a>
+        <h1><i class="fas fa-boxes"></i> Gestionar Lotes</h1>
+        <p><i class="fas fa-tag"></i> Producto: <strong>{{ producto[0] }}</strong></p>
+        <p><i class="fas fa-barcode"></i> Código: <span class="codigo-barras">{{ codigo }}</span></p>
+        <a href="/user_pasillo" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver a mi pasillo</a>
     </div>
 
     <div class="card">
-        <h3>📅 Lotes registrados</h3>
+        <h3><i class="fas fa-calendar-alt"></i> Lotes registrados</h3>
         {% if lotes %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Fecha de vencimiento</th>
-                    <th>Cantidad actual</th>
-                    <th>Registrado por</th>
-                    <th>Fecha registro</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in lotes %}
-                <tr class="{% if l[1] <= hoy %}alerta{% endif %}">
-                    <td>{{ l[0] }}</td>
-                    <td>
-                        {{ l[1] }}
-                        {% if l[1] <= hoy %}
-                        <span class="vencido"> (VENCIDO)</span>
-                        {% else %}
-                        <span class="vigente"> (Vigente)</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <form class="form-editar" method="POST" action="/editar_lote/{{ l[0] }}">
-                            <input type="number" name="cantidad" value="{{ l[2] }}" required min="0">
-                            <button type="submit" class="btn btn-info btn-sm">Actualizar</button>
-                        </form>
-                    </td>
-                    <td>{{ l[3] }}</td>
-                    <td>{{ l[4] }}</td>
-                    <td>
-                        <a href="/eliminar_lote/{{ l[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este lote? Esta acción no se puede deshacer.')">🗑️ Eliminar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha de vencimiento</th>
+                        <th>Cantidad actual</th>
+                        <th>Registrado por</th>
+                        <th>Fecha registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lotes %}
+                    <tr class="{% if l[1] <= hoy %}alerta{% endif %}">
+                        <td>{{ l[0] }}</td>
+                        <td>
+                            {{ l[1] }}
+                            {% if l[1] <= hoy %}
+                            <span class="vencido"> <i class="fas fa-exclamation-circle"></i> (VENCIDO)</span>
+                            {% else %}
+                            <span class="vigente"> <i class="fas fa-check-circle"></i> (Vigente)</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form class="form-editar" method="POST" action="/editar_lote/{{ l[0] }}">
+                                <input type="number" name="cantidad" value="{{ l[2] }}" required min="0">
+                                <button type="submit" class="btn btn-info btn-sm"><i class="fas fa-save"></i> Actualizar</button>
+                            </form>
+                        </td>
+                        <td><i class="fas fa-user"></i> {{ l[3] }}</td>
+                        <td><i class="fas fa-calendar-day"></i> {{ l[4] }}</td>
+                        <td>
+                            <a href="/eliminar_lote/{{ l[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este lote? Esta acción no se puede deshacer.')"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <p style="margin-top:10px; color:#666;">⚠️ No hay lotes registrados para este producto.</p>
+        <p style="margin-top:10px; color:#666;"><i class="fas fa-info-circle"></i> No hay lotes registrados para este producto.</p>
         {% endif %}
     </div>
 
     <div class="card">
-        <h3>➕ Agregar nuevo lote</h3>
-        <form method="POST" action="/registrar_lote">
+        <h3><i class="fas fa-plus-circle"></i> Agregar nuevo lote</h3>
+        <form method="POST" action="/registrar_lote" onsubmit="return confirm('¿Confirmar registro de nuevo lote?')">
             <input type="hidden" name="codigo" value="{{ codigo }}">
             <div class="form-group">
-                <label>Fecha de vencimiento</label>
+                <label><i class="fas fa-calendar-alt"></i> Fecha de vencimiento</label>
                 <input type="date" name="fecha_vencimiento" required>
             </div>
             <div class="form-group">
-                <label>Cantidad</label>
+                <label><i class="fas fa-cubes"></i> Cantidad</label>
                 <input type="number" name="cantidad" required min="1">
             </div>
-            <button type="submit" class="btn btn-primary">➕ Registrar nuevo lote</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Registrar nuevo lote</button>
         </form>
     </div>
+
+    <!-- Botón modo oscuro -->
+    <button class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Modo oscuro / claro
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            darkModeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+        
+        // Cargar modo oscuro guardado
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+    </script>
 </body>
 </html>
