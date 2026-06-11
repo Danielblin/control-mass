@@ -538,6 +538,98 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ========== HISTORIAL DE MERMAS ==========
+
+@app.route('/ver_mermas')
+def ver_mermas():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    pasillo = session['user_pasillo']
+    
+    # Obtener filtros
+    producto_filtro = request.args.get('producto', '')
+    motivo_filtro = request.args.get('motivo', '')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    # Lista de productos para el filtro
+    cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
+    productos_lista = cursor.fetchall()
+    
+    # Construir query
+    query = """
+        SELECT m.fecha, p.nombre, m.cantidad, m.motivo, m.usuario, m.id
+        FROM mermas m
+        JOIN productos p ON m.codigo_producto = p.codigo
+        WHERE p.pasillo=?
+    """
+    params = [pasillo]
+    
+    if producto_filtro:
+        query += " AND p.codigo=?"
+        params.append(producto_filtro)
+    if motivo_filtro:
+        query += " AND m.motivo=?"
+        params.append(motivo_filtro)
+    if fecha_desde:
+        query += " AND m.fecha >= ?"
+        params.append(fecha_desde)
+    if fecha_hasta:
+        query += " AND m.fecha <= ?"
+        params.append(fecha_hasta)
+    
+    query += " ORDER BY m.fecha DESC"
+    
+    cursor.execute(query, params)
+    mermas = cursor.fetchall()
+    
+    # Calcular estadísticas
+    cursor.execute("SELECT COUNT(*) FROM mermas m JOIN productos p ON m.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
+    total_mermas = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM mermas m JOIN productos p ON m.codigo_producto = p.codigo WHERE p.pasillo=? AND m.motivo='vencido'", (pasillo,))
+    por_vencimiento = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM mermas m JOIN productos p ON m.codigo_producto = p.codigo WHERE p.pasillo=? AND m.motivo='roto'", (pasillo,))
+    por_roto = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM mermas m JOIN productos p ON m.codigo_producto = p.codigo WHERE p.pasillo=? AND m.motivo='extraviado'", (pasillo,))
+    por_extraviado = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return render_template('ver_mermas.html',
+                         mermas=mermas,
+                         productos=productos_lista,
+                         producto_filtro=producto_filtro,
+                         motivo_filtro=motivo_filtro,
+                         fecha_desde=fecha_desde,
+                         fecha_hasta=fecha_hasta,
+                         total_mermas=total_mermas,
+                         por_vencimiento=por_vencimiento,
+                         por_roto=por_roto,
+                         por_extraviado=por_extraviado,
+                         pasillo=pasillo,
+                         usuario=session['user_nombre'])
+
+
+@app.route('/eliminar_merma/<int:merma_id>', methods=['POST'])
+def eliminar_merma(merma_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM mermas WHERE id=?", (merma_id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('ver_mermas'))
+
+# ========== FIN HISTORIAL DE MERMAS ==========
 
 application = app
 
