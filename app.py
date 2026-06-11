@@ -411,6 +411,49 @@ def eliminar_producto(codigo):
     
     return redirect(url_for('user_pasillo'))
 
+@app.route('/editar_producto', methods=['POST'])
+def editar_producto():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    codigo_original = request.form['codigo_original']
+    codigo_nuevo = request.form['codigo']
+    nombre = request.form['nombre']
+    precio = float(request.form['precio'])
+    uxb = request.form.get('uxb', '')
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    try:
+        if codigo_original != codigo_nuevo:
+            # Verificar si el nuevo código ya existe
+            cursor.execute("SELECT codigo FROM productos WHERE codigo=?", (codigo_nuevo,))
+            if cursor.fetchone():
+                conn.close()
+                return "❌ Error: El nuevo código de barras ya está en uso por otro producto."
+            
+            # Actualizar código en todas las tablas
+            cursor.execute("UPDATE productos SET codigo=?, nombre=?, precio=?, uxb=? WHERE codigo=?", 
+                          (codigo_nuevo, nombre, precio, uxb, codigo_original))
+            cursor.execute("UPDATE lotes SET codigo_producto=? WHERE codigo_producto=?", 
+                          (codigo_nuevo, codigo_original))
+            cursor.execute("UPDATE conteos SET codigo_producto=? WHERE codigo_producto=?", 
+                          (codigo_nuevo, codigo_original))
+            cursor.execute("UPDATE mermas SET codigo_producto=? WHERE codigo_producto=?", 
+                          (codigo_nuevo, codigo_original))
+        else:
+            # Solo actualizar datos
+            cursor.execute("UPDATE productos SET nombre=?, precio=?, uxb=? WHERE codigo=?", 
+                          (nombre, precio, uxb, codigo_original))
+        
+        conn.commit()
+        conn.close()
+        return redirect(url_for('user_pasillo'))
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return f"❌ Error al editar producto: {str(e)}"
 
 # ========== NUEVAS RUTAS PARA GESTIÓN DE LOTES ==========
 

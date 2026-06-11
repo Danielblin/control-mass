@@ -19,6 +19,67 @@
             padding: 20px;
             padding-bottom: 80px;
             color: #1a1a2e;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Modo oscuro */
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .card {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .producto-card {
+            background: #3a3a5a;
+        }
+
+        body.dark-mode .producto-card:hover {
+            background: #4a4a6a;
+        }
+
+        body.dark-mode .stat-card {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .btn-primary {
+            background: #4a6a9a;
+        }
+
+        body.dark-mode .btn-primary:hover {
+            background: #3a5a8a;
+        }
+
+        body.dark-mode .bottom-menu {
+            background: #2d2d44;
+        }
+
+        body.dark-mode .menu-item {
+            color: #b0b0c0;
+        }
+
+        body.dark-mode .menu-item:hover {
+            background: #4a4a6a;
+        }
+
+        body.dark-mode .modal-content {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode input, body.dark-mode select {
+            background: #3a3a5a;
+            border-color: #5a5a7a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .codigo-barras {
+            background: #4a4a6a;
+            color: #e0e0e0;
         }
 
         /* Header con botón de ajustes */
@@ -32,6 +93,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        body.dark-mode .header {
+            background: linear-gradient(135deg, #2a2a4a 0%, #3a3a6a 100%);
         }
 
         .header h1 {
@@ -115,6 +180,7 @@
         }
 
         .stat-card.total .stat-number { color: #2a5298; }
+        body.dark-mode .stat-card.total .stat-number { color: #6a8acc; }
         .stat-card.diferencia .stat-number { color: #e67e22; }
         .stat-card.correcto .stat-number { color: #27ae60; }
 
@@ -125,6 +191,15 @@
             padding: 15px;
             border-radius: 12px;
             margin-bottom: 20px;
+        }
+
+        body.dark-mode .alert {
+            background: #3a3a2a;
+            border-left-color: #ffc107;
+        }
+
+        body.dark-mode .alert h3 {
+            color: #ffc107;
         }
 
         .alert h3 {
@@ -178,6 +253,14 @@
             border-bottom: 1px solid #eee;
         }
 
+        body.dark-mode th {
+            background: #4a6a9a;
+        }
+
+        body.dark-mode td {
+            border-bottom-color: #4a4a6a;
+        }
+
         th {
             background: #2a5298;
             color: white;
@@ -223,6 +306,10 @@
             gap: 12px;
         }
 
+        body.dark-mode .producto-detalle {
+            color: #b0b0c0;
+        }
+
         .producto-detalle span i {
             margin-right: 4px;
             width: 14px;
@@ -238,6 +325,10 @@
         .stock-actual {
             color: #2a5298;
             font-weight: bold;
+        }
+
+        body.dark-mode .stock-actual {
+            color: #6a8acc;
         }
 
         .diferencia {
@@ -274,6 +365,10 @@
         .btn-primary { background: #2a5298; color: white; }
         .btn-primary:hover { background: #1e3c72; }
         .btn-primary i { margin-right: 6px; }
+
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e67e22; }
+        .btn-warning i { margin-right: 6px; }
 
         .btn-danger { background: #e74c3c; color: white; }
         .btn-danger:hover { background: #c0392b; }
@@ -394,6 +489,10 @@
             color: #555;
         }
 
+        body.dark-mode label {
+            color: #b0b0c0;
+        }
+
         input, select {
             width: 100%;
             padding: 10px 12px;
@@ -437,9 +536,9 @@
     <div class="header">
         <div>
             <h1><i class="fas fa-warehouse"></i> Pasillo: {{ pasillo }}</h1>
-            <p><i class="fas fa-user-circle"></i> Usuario: {{ usuario }} | <a href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></p>
+            <p><i class="fas fa-user-circle"></i> Usuario: {{ usuario }}</p>
         </div>
-        <button class="settings-btn" onclick="alert('⚙️ Ajustes en desarrollo')">
+        <button class="settings-btn" onclick="abrirModalAjustes()">
             <i class="fas fa-cog"></i>
         </button>
     </div>
@@ -504,6 +603,7 @@
                 <div class="producto-info">
                     <div class="producto-nombre">{{ p[1] }}</div>
                     <div class="producto-detalle">
+                        <span><i class="fas fa-barcode"></i> {{ p[0] }}</span>
                         <span><i class="fas fa-tag"></i> S/ {{ p[2] }}</span>
                         <span><i class="fas fa-cube"></i> {{ p[3] if p[3] else 'No registrado' }}</span>
                         <span><i class="fas fa-box"></i> <span class="stock-actual">{{ p[4] }} unidades</span></span>
@@ -522,6 +622,7 @@
                     </div>
                 </div>
                 <div class="producto-acciones">
+                    <button class="btn btn-warning btn-sm" onclick="abrirModalEditar('{{ p[0] }}', '{{ p[1] }}', '{{ p[2] }}', '{{ p[3] if p[3] else '' }}')"><i class="fas fa-pencil-alt"></i> Editar</button>
                     <a href="/eliminar_producto/{{ p[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este producto y todos sus registros?')"><i class="fas fa-trash-alt"></i> Eliminar</a>
                 </div>
             </div>
@@ -549,6 +650,61 @@
         </button>
     </div>
 
+    <!-- MODAL: Ajustes (⚙️) -->
+    <div id="modal-ajustes" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Ajustes</h3>
+                <button class="close-modal" onclick="cerrarModal('ajustes')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-moon"></i> Modo oscuro / claro</label>
+                <button id="toggleDarkModeBtn" class="btn btn-primary" style="width:100%">
+                    <i class="fas fa-adjust"></i> Cambiar tema
+                </button>
+            </div>
+            <hr style="margin: 20px 0;">
+            <div class="form-group">
+                <label><i class="fas fa-sign-out-alt"></i> Cerrar sesión</label>
+                <a href="/logout" class="btn btn-danger" style="width:100%; text-align:center; display:block;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Editar producto -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-pencil-alt"></i> Editar producto</h3>
+                <button class="close-modal" onclick="cerrarModal('editar')"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formEditarProducto" method="POST" action="/editar_producto">
+                <input type="hidden" name="codigo_original" id="codigo_original">
+                <div class="form-group">
+                    <label><i class="fas fa-barcode"></i> Código de barras</label>
+                    <input type="text" name="codigo" id="edit_codigo" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Nombre del producto</label>
+                    <input type="text" name="nombre" id="edit_nombre" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-dollar-sign"></i> Precio (S/)</label>
+                    <input type="number" step="0.01" name="precio" id="edit_precio" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-cube"></i> UxB (Unidades por caja/paquete)</label>
+                    <input type="text" name="uxb" id="edit_uxb" placeholder="Ej: CJ 24 UN">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" onclick="return confirm('¿Confirmar cambios del producto?')">
+                    <i class="fas fa-save"></i> Guardar cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL: Registrar conteo -->
     <div id="modal-conteo" class="modal">
         <div class="modal-content">
@@ -556,7 +712,7 @@
                 <h3><i class="fas fa-clipboard-list"></i> Registrar conteo diario</h3>
                 <button class="close-modal" onclick="cerrarModal('conteo')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_conteo">
+            <form method="POST" action="/registrar_conteo" onsubmit="return confirm('¿Confirmar registro de conteo?')">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -589,7 +745,7 @@
                 <h3><i class="fas fa-boxes"></i> Registrar nuevo lote</h3>
                 <button class="close-modal" onclick="cerrarModal('lote')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_lote">
+            <form method="POST" action="/registrar_lote" onsubmit="return confirm('¿Confirmar registro de lote?')">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -619,7 +775,7 @@
                 <h3><i class="fas fa-trash-alt"></i> Registrar merma</h3>
                 <button class="close-modal" onclick="cerrarModal('merma')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_merma">
+            <form method="POST" action="/registrar_merma" onsubmit="return confirm('¿Confirmar registro de merma?')">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -653,7 +809,7 @@
                 <h3><i class="fas fa-plus-circle"></i> Agregar nuevo producto</h3>
                 <button class="close-modal" onclick="cerrarModal('producto')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/agregar_producto">
+            <form method="POST" action="/agregar_producto" onsubmit="return confirm('¿Confirmar agregar producto?')">
                 <div class="form-group">
                     <label>Código de barras</label>
                     <input type="text" name="codigo" placeholder="Ej: 7750243082365" required>
@@ -677,17 +833,44 @@
     </div>
 
     <script>
+        // Funciones para modales
         function abrirModal(tipo) {
             document.getElementById('modal-' + tipo).style.display = 'flex';
         }
         function cerrarModal(tipo) {
             document.getElementById('modal-' + tipo).style.display = 'none';
         }
+        function abrirModalAjustes() {
+            document.getElementById('modal-ajustes').style.display = 'flex';
+        }
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
         }
+
+        // Función para abrir modal de edición con datos del producto
+        function abrirModalEditar(codigo, nombre, precio, uxb) {
+            document.getElementById('codigo_original').value = codigo;
+            document.getElementById('edit_codigo').value = codigo;
+            document.getElementById('edit_nombre').value = nombre;
+            document.getElementById('edit_precio').value = precio;
+            document.getElementById('edit_uxb').value = uxb;
+            document.getElementById('modal-editar').style.display = 'flex';
+        }
+
+        // Modo oscuro / claro
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Cargar modo oscuro guardado
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        document.getElementById('toggleDarkModeBtn').addEventListener('click', toggleDarkMode);
     </script>
 </body>
 </html>
