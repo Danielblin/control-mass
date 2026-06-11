@@ -640,3 +640,54 @@ if __name__ == '__main__':
     # ✅ aquí recién se ejecuta en local (NO en Render)
     crear_base_datos()
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+@app.route('/exportar_mermas_excel')
+def exportar_mermas_excel():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    pasillo = session['user_pasillo']
+    
+    # Obtener filtros de la URL
+    producto_filtro = request.args.get('producto', '')
+    motivo_filtro = request.args.get('motivo', '')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    
+    conn = obtener_conexion()
+    
+    # Construir query
+    query = """
+        SELECT m.fecha, p.nombre, m.cantidad, m.motivo, m.usuario
+        FROM mermas m
+        JOIN productos p ON m.codigo_producto = p.codigo
+        WHERE p.pasillo=?
+    """
+    params = [pasillo]
+    
+    if producto_filtro:
+        query += " AND p.codigo=?"
+        params.append(producto_filtro)
+    if motivo_filtro:
+        query += " AND m.motivo=?"
+        params.append(motivo_filtro)
+    if fecha_desde:
+        query += " AND m.fecha >= ?"
+        params.append(fecha_desde)
+    if fecha_hasta:
+        query += " AND m.fecha <= ?"
+        params.append(fecha_hasta)
+    
+    query += " ORDER BY m.fecha DESC"
+    
+    # Ejecutar query y crear DataFrame
+    df = pd.read_sql_query(query, conn, params=params)
+    conn.close()
+    
+    # Renombrar columnas
+    df.columns = ['Fecha', 'Producto', 'Cantidad', 'Motivo', 'Usuario']
+    
+    # Crear archivo Excel
+    nombre_archivo = f'mermas_{pasillo}_{date.today()}.xlsx'
+    df.to_excel(nombre_archivo, index=False, sheet_name='Mermas')
+    
+    return send_file(nombre_archivo, as_attachment=True)
