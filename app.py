@@ -22,6 +22,8 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
+    nombre = ''
     if request.method == 'POST':
         nombre = request.form['nombre']
         password = request.form['password']
@@ -33,8 +35,8 @@ def login():
             session['user_pasillo'] = usuario[4]
             return redirect(url_for('dashboard'))
         else:
-            return "❌ Usuario o contraseña incorrectos"
-    return render_template('login.html')
+            error = "❌ Usuario o contraseña incorrectos. Por favor, verifica tus credenciales."
+    return render_template('login.html', error=error, nombre=nombre)
 
 @app.route('/dashboard')
 def dashboard():

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Control Mass - Login</title>
+    <!-- Font Awesome 6 (íconos profesionales) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -46,6 +48,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         h1 {
@@ -82,6 +86,11 @@
             font-weight: 500;
             color: #1a1a2e;
             margin-bottom: 8px;
+        }
+
+        label i {
+            margin-right: 6px;
+            color: #667eea;
         }
 
         input {
@@ -151,6 +160,24 @@
             opacity: 0.9;
         }
 
+        /* Mensaje de error */
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #721c24;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message i {
+            font-size: 18px;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .login-container {
@@ -182,28 +209,36 @@
     <div class="login-container">
         <div class="logo">
             <div class="logo-icon">
-                📦
+                <i class="fas fa-boxes"></i>
             </div>
         </div>
         <h1>Control Mass</h1>
         <div class="subtitle">Tiendas Mass - Gestión de Pasillos</div>
 
         <form method="POST">
+            <!-- Mostrar mensaje de error si existe -->
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
             <div class="form-group">
-                <label>Usuario</label>
-                <input type="text" name="nombre" placeholder="Ingresa tu usuario" required autocomplete="username">
+                <label><i class="fas fa-user"></i> Usuario</label>
+                <input type="text" name="nombre" placeholder="Ingresa tu usuario" value="{{ nombre }}" required autocomplete="username">
             </div>
             <div class="form-group">
-                <label>Contraseña</label>
+                <label><i class="fas fa-lock"></i> Contraseña</label>
                 <div class="password-wrapper">
                     <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
                     <button type="button" class="password-toggle" id="togglePassword" tabindex="-1">
-                        👁️
+                        <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
             <button type="submit" class="btn-login">
-                Ingresar
+                <i class="fas fa-sign-in-alt"></i> Ingresar
             </button>
         </form>
     </div>
@@ -216,7 +251,14 @@
         togglePassword.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
+            const icon = this.querySelector('i');
+            if (type === 'password') {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
         });
     </script>
 </body>
