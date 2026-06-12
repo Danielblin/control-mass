@@ -712,7 +712,7 @@
                 <h3><i class="fas fa-clipboard-list"></i> Registrar conteo diario</h3>
                 <button class="close-modal" onclick="cerrarModal('conteo')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_conteo" onsubmit="return confirm('¿Confirmar registro de conteo?')">
+            <form method="POST" action="/registrar_conteo">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -745,7 +745,7 @@
                 <h3><i class="fas fa-boxes"></i> Registrar nuevo lote</h3>
                 <button class="close-modal" onclick="cerrarModal('lote')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_lote" onsubmit="return confirm('¿Confirmar registro de lote?')">
+            <form method="POST" action="/registrar_lote">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -768,14 +768,14 @@
         </div>
     </div>
 
-        <!-- MODAL: Registrar merma -->
+    <!-- MODAL: Registrar merma -->
     <div id="modal-merma" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-trash-alt"></i> Registrar merma</h3>
                 <button class="close-modal" onclick="cerrarModal('merma')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/registrar_merma" onsubmit="return confirm('¿Confirmar registro de merma?')">
+            <form method="POST" action="/registrar_merma">
                 <div class="form-group">
                     <label>Producto</label>
                     <select name="codigo" required>
@@ -812,7 +812,7 @@
                 <h3><i class="fas fa-plus-circle"></i> Agregar nuevo producto</h3>
                 <button class="close-modal" onclick="cerrarModal('producto')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/agregar_producto" onsubmit="return confirm('¿Confirmar agregar producto?')">
+            <form method="POST" action="/agregar_producto">
                 <div class="form-group">
                     <label>Código de barras</label>
                     <input type="text" name="codigo" placeholder="Ej: 7750243082365" required>
@@ -835,8 +835,34 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACION PERSONALIZADO -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none;">
+                <h3 style="border-left: none; text-align: center;">
+                    <i class="fas fa-question-circle" style="font-size: 2rem; color: #f39c12;"></i>
+                </h3>
+            </div>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <p id="confirmacionMensaje" style="font-size: 1.1rem;">¿Confirmar registro de lote?</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="confirmarBtn" class="btn btn-primary" style="padding: 12px 25px;">
+                    <i class="fas fa-check-circle"></i> Aceptar
+                </button>
+                <button id="cancelarBtn" class="btn btn-danger" style="padding: 12px 25px; background: #6c757d;">
+                    <i class="fas fa-times-circle"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Funciones para modales
+        // Variables para el modal de confirmación
+        let confirmacionResolve = null;
+        let confirmacionReject = null;
+
+        // Funciones para modales normales
         function abrirModal(tipo) {
             document.getElementById('modal-' + tipo).style.display = 'flex';
         }
@@ -846,10 +872,37 @@
         function abrirModalAjustes() {
             document.getElementById('modal-ajustes').style.display = 'flex';
         }
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
+        
+        // Modal de confirmación personalizado
+        function mostrarConfirmacion(mensaje) {
+            return new Promise((resolve, reject) => {
+                const modalConfirm = document.getElementById('modalConfirmacion');
+                const confirmarBtn = document.getElementById('confirmarBtn');
+                const cancelarBtn = document.getElementById('cancelarBtn');
+                const mensajeEl = document.getElementById('confirmacionMensaje');
+                
+                mensajeEl.textContent = mensaje || '¿Confirmar esta acción?';
+                modalConfirm.style.display = 'flex';
+                
+                const onConfirm = () => {
+                    limpiar();
+                    resolve(true);
+                };
+                
+                const onCancel = () => {
+                    limpiar();
+                    resolve(false);
+                };
+                
+                const limpiar = () => {
+                    modalConfirm.style.display = 'none';
+                    confirmarBtn.removeEventListener('click', onConfirm);
+                    cancelarBtn.removeEventListener('click', onCancel);
+                };
+                
+                confirmarBtn.addEventListener('click', onConfirm);
+                cancelarBtn.addEventListener('click', onCancel);
+            });
         }
 
         // Función para abrir modal de edición con datos del producto
@@ -860,6 +913,61 @@
             document.getElementById('edit_precio').value = precio;
             document.getElementById('edit_uxb').value = uxb;
             document.getElementById('modal-editar').style.display = 'flex';
+        }
+
+        // Interceptar el submit del formulario de registro de lote
+        const formLote = document.querySelector('#modal-lote form');
+        if (formLote) {
+            formLote.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const confirmado = await mostrarConfirmacion('¿Confirmar registro de lote?');
+                if (confirmado) {
+                    this.submit();
+                }
+            });
+        }
+
+        // Interceptar el submit del formulario de registro de conteo
+        const formConteo = document.querySelector('#modal-conteo form');
+        if (formConteo) {
+            formConteo.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const confirmado = await mostrarConfirmacion('¿Confirmar registro de conteo?');
+                if (confirmado) {
+                    this.submit();
+                }
+            });
+        }
+
+        // Interceptar el submit del formulario de registro de merma
+        const formMerma = document.querySelector('#modal-merma form');
+        if (formMerma) {
+            formMerma.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const confirmado = await mostrarConfirmacion('¿Confirmar registro de merma?');
+                if (confirmado) {
+                    this.submit();
+                }
+            });
+        }
+
+        // Interceptar el submit del formulario de agregar producto
+        const formProducto = document.querySelector('#modal-producto form');
+        if (formProducto) {
+            formProducto.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const confirmado = await mostrarConfirmacion('¿Confirmar agregar producto?');
+                if (confirmado) {
+                    this.submit();
+                }
+            });
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
         }
 
         // Modo oscuro / claro
@@ -873,7 +981,10 @@
             document.body.classList.add('dark-mode');
         }
 
-        document.getElementById('toggleDarkModeBtn').addEventListener('click', toggleDarkMode);
+        const toggleBtn = document.getElementById('toggleDarkModeBtn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleDarkMode);
+        }
     </script>
 </body>
 </html>
