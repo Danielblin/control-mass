@@ -584,7 +584,7 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </tr>
         </div>
         {% if productos_con_lotes|length == 0 %}
         <p style="margin-top:10px; color:#666;"><i class="fas fa-info-circle"></i> No hay productos con lotes registrados.</p>
@@ -927,18 +927,6 @@
             });
         }
 
-        // Interceptar el submit del formulario de registro de conteo
-        const formConteo = document.querySelector('#modal-conteo form');
-        if (formConteo) {
-            formConteo.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const confirmado = await mostrarConfirmacion('¿Confirmar registro de conteo?');
-                if (confirmado) {
-                    this.submit();
-                }
-            });
-        }
-
         // Interceptar el submit del formulario de registro de merma
         const formMerma = document.querySelector('#modal-merma form');
         if (formMerma) {
@@ -963,9 +951,13 @@
             });
         }
 
-        // Cerrar modales al hacer clic fuera
+        // NOTA: El formulario de conteo (formConteo) YA NO tiene confirmación
+        // Se envía automáticamente al hacer clic en el botón Registrar conteo
+
+        // Cerrar modales al hacer clic fuera (SOLO el de confirmación)
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
+            // Solo cerrar si el modal es el de confirmación
+            if (event.target.classList.contains('modal') && event.target.id === 'modalConfirmacion') {
                 event.target.style.display = 'none';
             }
         }
