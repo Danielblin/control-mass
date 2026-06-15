@@ -638,6 +638,121 @@ application = app
 # Railway deployment fix - 2026
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
+# ========== NOTAS (AGENDA/APUNTES) ==========
+
+@app.route('/notas')
+def notas():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    usuario = session['user_nombre']
+    
+    # Obtener filtros
+    estado_filtro = request.args.get('estado', '')
+    prioridad_filtro = request.args.get('prioridad', '')
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    query = "SELECT id, titulo, descripcion, prioridad, estado, fecha_creacion FROM notas WHERE usuario=?"
+    params = [usuario]
+    
+    if estado_filtro:
+        query += " AND estado=?"
+        params.append(estado_filtro)
+    if prioridad_filtro:
+        query += " AND prioridad=?"
+        params.append(prioridad_filtro)
+    
+    query += " ORDER BY CASE prioridad WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'bajo' THEN 3 END, fecha_creacion DESC"
+    
+    cursor.execute(query, params)
+    notas = cursor.fetchall()
+    
+    # Estadísticas
+    cursor.execute("SELECT COUNT(*) FROM notas WHERE usuario=?", (usuario,))
+    total_notas = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM notas WHERE usuario=? AND estado='pendiente'", (usuario,))
+    pendientes = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM notas WHERE usuario=? AND estado='completado'", (usuario,))
+    completadas = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM notas WHERE usuario=? AND estado='cancelado'", (usuario,))
+    canceladas = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return render_template('notas.html',
+                         notas=notas,
+                         total_notas=total_notas,
+                         pendientes=pendientes,
+                         completadas=completadas,
+                         canceladas=canceladas,
+                         estado_filtro=estado_filtro,
+                         prioridad_filtro=prioridad_filtro,
+                         usuario=usuario)
+
+
+@app.route('/crear_nota', methods=['POST'])
+def crear_nota():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    titulo = request.form['titulo']
+    descripcion = request.form.get('descripcion', '')
+    prioridad = request.form['prioridad']
+    estado = request.form.get('estado', 'pendiente')
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO notas (usuario, titulo, descripcion, prioridad, estado, fecha_creacion)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (session['user_nombre'], titulo, descripcion, prioridad, estado, date.today()))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('notas'))
+
+
+@app.route('/editar_nota/<int:nota_id>', methods=['POST'])
+def editar_nota(nota_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    titulo = request.form['titulo']
+    descripcion = request.form.get('descripcion', '')
+    prioridad = request.form['prioridad']
+    estado = request.form['estado']
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE notas SET titulo=?, descripcion=?, prioridad=?, estado=?
+        WHERE id=? AND usuario=?
+    """, (titulo, descripcion, prioridad, estado, nota_id, session['user_nombre']))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('notas'))
+
+
+@app.route('/eliminar_nota/<int:nota_id>')
+def eliminar_nota(nota_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM notas WHERE id=? AND usuario=?", (nota_id, session['user_nombre']))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('notas'))
+
+# ========== FIN NOTAS ==========
+
 if __name__ == '__main__':
     # ✅ aquí recién se ejecuta en local (NO en Render)
     crear_base_datos()

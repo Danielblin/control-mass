@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mis Notas - Control Mass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            padding-bottom: 80px;
+            color: #1a1a2e;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .card { background: #2d2d44; }
+        body.dark-mode .nota-card { background: #3a3a5a; }
+        body.dark-mode .nota-card:hover { background: #4a4a6a; }
+        body.dark-mode .modal-content { background: #2d2d44; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #3a3a5a; border-color: #5a5a7a; color: #e0e0e0; }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        body.dark-mode .header { background: linear-gradient(135deg, #2a2a4a 0%, #3a3a6a 100%); }
+        
+        .header h1 { font-size: 1.5rem; }
+        .header h1 i { margin-right: 10px; }
+        .header p { opacity: 0.9; font-size: 0.8rem; }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e67e22; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        
+        body.dark-mode .stat-card { background: #2d2d44; }
+        
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        .stat-card.total .stat-number { color: #2a5298; }
+        .stat-card.pendientes .stat-number { color: #f39c12; }
+        .stat-card.completadas .stat-number { color: #27ae60; }
+        .stat-card.canceladas .stat-number { color: #e74c3c; }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card h3 {
+            margin-bottom: 15px;
+            border-left: 4px solid #2a5298;
+            padding-left: 12px;
+        }
+        .card h3 i { margin-right: 8px; color: #2a5298; }
+        
+        .filter-group { display: inline-block; margin: 5px 10px 5px 0; }
+        label { font-weight: 600; font-size: 0.8rem; color: #555; margin-right: 5px; }
+        select, input, textarea { padding: 10px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.9rem; width: 100%; }
+        
+        .notas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .nota-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 15px;
+            transition: background 0.2s;
+        }
+        
+        .nota-card:hover { background: #eef2f7; }
+        
+        .nota-titulo { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; }
+        .nota-descripcion { font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+        .nota-meta { font-size: 0.7rem; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+        .prioridad-alto { color: #e74c3c; font-weight: bold; }
+        .prioridad-medio { color: #f39c12; font-weight: bold; }
+        .prioridad-bajo { color: #27ae60; font-weight: bold; }
+        .estado-pendiente { color: #f39c12; }
+        .estado-completado { color: #27ae60; }
+        .estado-cancelado { color: #e74c3c; }
+        
+        .nota-acciones { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 { border-left: 4px solid #2a5298; padding-left: 10px; }
+        .close-modal { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #666; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
+        
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .notas-grid { grid-template-columns: 1fr; }
+            .filter-group { display: block; margin-bottom: 10px; }
+            select, input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1><i class="fas fa-sticky-note"></i> Mis Notas</h1>
+            <p><i class="fas fa-user-circle"></i> Usuario: {{ usuario }}</p>
+        </div>
+        <a href="/user_pasillo" class="btn btn-primary" style="background:rgba(255,255,255,0.2);"><i class="fas fa-arrow-left"></i> Volver</a>
+    </div>
+    
+    <!-- Tarjetas de estadísticas -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-number">{{ total_notas }}</div>
+            <div><i class="fas fa-book"></i> Total notas</div>
+        </div>
+        <div class="stat-card pendientes">
+            <div class="stat-number">{{ pendientes }}</div>
+            <div><i class="fas fa-clock"></i> Pendientes</div>
+        </div>
+        <div class="stat-card completadas">
+            <div class="stat-number">{{ completadas }}</div>
+            <div><i class="fas fa-check-circle"></i> Completadas</div>
+        </div>
+        <div class="stat-card canceladas">
+            <div class="stat-number">{{ canceladas }}</div>
+            <div><i class="fas fa-times-circle"></i> Canceladas</div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card">
+        <h3><i class="fas fa-filter"></i> Filtros</h3>
+        <form method="GET">
+            <div class="filter-group">
+                <label>Estado:</label>
+                <select name="estado">
+                    <option value="">Todos</option>
+                    <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="completado" {% if estado_filtro == 'completado' %}selected{% endif %}>Completado</option>
+                    <option value="cancelado" {% if estado_filtro == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Prioridad:</label>
+                <select name="prioridad">
+                    <option value="">Todas</option>
+                    <option value="alto" {% if prioridad_filtro == 'alto' %}selected{% endif %}>Alta</option>
+                    <option value="medio" {% if prioridad_filtro == 'medio' %}selected{% endif %}>Media</option>
+                    <option value="bajo" {% if prioridad_filtro == 'bajo' %}selected{% endif %}>Baja</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-info"><i class="fas fa-search"></i> Filtrar</button>
+            <a href="/notas" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpiar</a>
+            <button type="button" class="btn btn-primary" onclick="abrirModalCrear()" style="float:right;"><i class="fas fa-plus-circle"></i> Nueva nota</button>
+        </form>
+    </div>
+    
+    <!-- Lista de notas -->
+    <div class="notas-grid">
+        {% for n in notas %}
+        <div class="nota-card">
+            <div class="nota-titulo">{{ n[1] }}</div>
+            <div class="nota-descripcion">{{ n[2] if n[2] else 'Sin descripción' }}</div>
+            <div class="nota-meta">
+                <span class="prioridad-{% if n[3] == 'alto' %}alto{% elif n[3] == 'medio' %}medio{% else %}bajo{% endif %}">
+                    <i class="fas fa-flag"></i> {{ n[3]|capitalize }}
+                </span>
+                <span class="estado-{{ n[4] }}">
+                    <i class="fas fa-circle"></i> {{ n[4]|capitalize }}
+                </span>
+                <span><i class="fas fa-calendar-alt"></i> {{ n[5] }}</span>
+            </div>
+            <div class="nota-acciones">
+                <button class="btn btn-warning btn-sm" onclick='abrirModalEditar({{ n[0] }}, "{{ n[1] }}", "{{ n[2] }}", "{{ n[3] }}", "{{ n[4] }}")'>
+                    <i class="fas fa-pencil-alt"></i> Editar
+                </button>
+                <a href="/eliminar_nota/{{ n[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta nota?')">
+                    <i class="fas fa-trash-alt"></i> Eliminar
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if notas|length == 0 %}
+    <div class="card" style="text-align:center;">
+        <p><i class="fas fa-info-circle"></i> No hay notas registradas. Crea una nueva nota.</p>
+    </div>
+    {% endif %}
+    
+    <!-- MODAL CREAR NOTA -->
+    <div id="modalCrear" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Nueva nota</h3>
+                <button class="close-modal" onclick="cerrarModal('Crear')"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" action="/crear_nota">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" name="titulo" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" rows="3" placeholder="Detalles de la nota..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select name="prioridad">
+                        <option value="bajo">Baja</option>
+                        <option value="medio">Media</option>
+                        <option value="alto">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Guardar nota</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL EDITAR NOTA -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-pencil-alt"></i> Editar nota</h3>
+                <button class="close-modal" onclick="cerrarModal('Editar')"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" action="" id="formEditarNota">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" name="titulo" id="edit_titulo" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" id="edit_descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select name="prioridad" id="edit_prioridad">
+                        <option value="bajo">Baja</option>
+                        <option value="medio">Media</option>
+                        <option value="alto">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado" id="edit_estado">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Guardar cambios</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Botón modo oscuro -->
+    <button class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <script>
+        function cerrarModal(tipo) {
+            document.getElementById('modal' + tipo).style.display = 'none';
+        }
+        
+        function abrirModalCrear() {
+            document.getElementById('modalCrear').style.display = 'flex';
+        }
+        
+        function abrirModalEditar(id, titulo, descripcion, prioridad, estado) {
+            document.getElementById('formEditarNota').action = '/editar_nota/' + id;
+            document.getElementById('edit_titulo').value = titulo;
+            document.getElementById('edit_descripcion').value = descripcion;
+            document.getElementById('edit_prioridad').value = prioridad;
+            document.getElementById('edit_estado').value = estado;
+            document.getElementById('modalEditar').style.display = 'flex';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        }
+        
+        // Modo oscuro / claro
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        // Cargar modo oscuro guardado
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+    </script>
+</body>
+</html>

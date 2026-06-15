@@ -71,6 +71,20 @@ def crear_base_datos():
         )
     ''')
     
+    # ========== NUEVA TABLA: NOTAS (AGENDA/APUNTES) ==========
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS notas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT,
+            titulo TEXT,
+            descripcion TEXT,
+            prioridad TEXT,
+            estado TEXT,
+            fecha_creacion DATE
+        )
+    ''')
+    # ========== FIN TABLA NOTAS ==========
+    
     # Usuario admin por defecto
     cursor.execute("SELECT * FROM usuarios WHERE nombre='admin'")
     if not cursor.fetchone():
@@ -88,6 +102,24 @@ def crear_base_datos():
         cursor.execute("ALTER TABLE conteos ADD COLUMN hora TEXT")
     except:
         pass  # La columna ya existe
+    
+    # Si la tabla notas ya existía sin alguna columna, agrégala (por si acaso)
+    try:
+        cursor.execute("ALTER TABLE notas ADD COLUMN descripcion TEXT")
+    except:
+        pass
+    try:
+        cursor.execute("ALTER TABLE notas ADD COLUMN prioridad TEXT")
+    except:
+        pass
+    try:
+        cursor.execute("ALTER TABLE notas ADD COLUMN estado TEXT")
+    except:
+        pass
+    try:
+        cursor.execute("ALTER TABLE notas ADD COLUMN fecha_creacion DATE")
+    except:
+        pass
     
     conn.commit()
     conn.close()
