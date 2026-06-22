@@ -6,6 +6,8 @@
     <title>Historial de Conteos - Control Mass</title>
     <!-- Font Awesome 6 (íconos profesionales) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- html2canvas para capturar imagen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -83,6 +85,8 @@
         .btn-info:hover { background: #138496; transform: translateY(-2px); }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; transform: translateY(-2px); }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -152,6 +156,17 @@
             transform: scale(1.05);
         }
         
+        /* Contenedor para capturar imagen */
+        #capturaTabla {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+        }
+        
+        body.dark-mode #capturaTabla {
+            background: #2d2d44;
+        }
+        
         @media (max-width: 768px) {
             body { padding: 12px; }
             th, td { padding: 8px; font-size: 0.7rem; }
@@ -169,6 +184,7 @@
     <div>
         <a href="/user_pasillo" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver a mi pasillo</a>
         <a href="/exportar_excel" class="btn btn-info"><i class="fas fa-file-excel"></i> Exportar a Excel</a>
+        <button class="btn btn-success" onclick="exportarImagen()"><i class="fas fa-image"></i> Exportar como Imagen</button>
     </div>
     
     <!-- Tarjetas de estadísticas -->
@@ -233,10 +249,10 @@
         </form>
     </div>
     
-    <!-- Tabla de resultados -->
-    <div class="card">
+    <!-- Tabla de resultados (contenedor para capturar imagen) -->
+    <div class="card" id="capturaTabla">
         <h3><i class="fas fa-table"></i> Resultados ({{ conteos|length }} registros)</h3>
-        <div class="table-responsive">
+        <div class="table-responsive" id="tablaParaCaptura">
             <table>
                 <thead>
                     <tr>
@@ -309,6 +325,40 @@
         }
         
         darkModeToggle.addEventListener('click', toggleDarkMode);
+        
+        // FUNCIÓN PARA EXPORTAR COMO IMAGEN
+        function exportarImagen() {
+            const elemento = document.getElementById('tablaParaCaptura');
+            
+            // Mostrar loading (opcional)
+            const btn = document.querySelector('.btn-success');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            btn.disabled = true;
+            
+            html2canvas(elemento, {
+                scale: 2, // Mayor calidad
+                backgroundColor: getComputedStyle(document.body).backgroundColor,
+                allowTaint: false,
+                useCORS: true,
+                logging: false
+            }).then(function(canvas) {
+                // Crear enlace de descarga
+                const enlace = document.createElement('a');
+                enlace.download = `historial_conteos_${new Date().toISOString().slice(0,10)}.png`;
+                enlace.href = canvas.toDataURL('image/png');
+                enlace.click();
+                
+                // Restaurar botón
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }).catch(function(error) {
+                console.error('Error al generar la imagen:', error);
+                alert('❌ Error al generar la imagen. Intenta de nuevo.');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>
