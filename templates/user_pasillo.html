@@ -731,7 +731,7 @@
         </div>
     </div>
 
-    <!-- MODAL: Registrar conteo -->
+    <!-- MODAL: Registrar conteo (CON BARRA DE BÚSQUEDA) -->
     <div id="modal-conteo" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -741,10 +741,12 @@
             <form method="POST" action="/registrar_conteo">
                 <div class="form-group">
                     <label>Producto</label>
-                    <select name="codigo" required>
+                    <!-- BARRA DE BÚSQUEDA PARA EL SELECT -->
+                    <input type="text" id="buscadorConteo" onkeyup="filtrarSelectConteo()" placeholder="🔍 Buscar producto..." style="width:100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.9rem; margin-bottom: 8px;">
+                    <select name="codigo" id="selectConteo" required style="width:100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.9rem;">
                         <option value="">Selecciona producto</option>
                         {% for p in productos %}
-                        <option value="{{ p[0] }}">{{ p[1] }} ({{ p[0] }})</option>
+                        <option value="{{ p[0] }}" data-nombre="{{ p[1].lower() }}">{{ p[1] }} ({{ p[0] }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -1001,6 +1003,26 @@
                     productos[i].style.display = '';
                 } else {
                     productos[i].style.display = 'none';
+                }
+            }
+        }
+
+        // FUNCIÓN DE BÚSQUEDA PARA EL SELECT DE CONTEO
+        function filtrarSelectConteo() {
+            const input = document.getElementById('buscadorConteo');
+            const filter = input.value.toLowerCase();
+            const select = document.getElementById('selectConteo');
+            const options = select.getElementsByTagName('option');
+            
+            // Mostrar la primera opción (Selecciona producto) siempre visible
+            options[0].style.display = '';
+            
+            for (let i = 1; i < options.length; i++) {
+                const nombre = options[i].getAttribute('data-nombre');
+                if (nombre && nombre.includes(filter)) {
+                    options[i].style.display = '';
+                } else {
+                    options[i].style.display = 'none';
                 }
             }
         }
