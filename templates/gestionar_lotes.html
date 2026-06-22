@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <!-- Font Awesome 6 (íconos profesionales) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- html2canvas para capturar imagen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -86,6 +88,8 @@
         .btn-info:hover { background: #138496; transform: translateY(-2px); }
         .btn-warning { background: #f39c12; color: white; }
         .btn-warning:hover { background: #e67e22; transform: translateY(-2px); }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; transform: translateY(-2px); }
         .btn-sm { padding: 5px 12px; font-size: 12px; }
         
         .card { 
@@ -190,6 +194,17 @@
             transform: scale(1.05);
         }
         
+        /* Contenedor para capturar imagen */
+        #capturaTabla {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+        }
+        
+        body.dark-mode #capturaTabla {
+            background: #2d2d44;
+        }
+        
         @media (max-width: 768px) {
             body { padding: 12px; }
             th, td { padding: 8px; font-size: 0.75rem; }
@@ -203,13 +218,16 @@
         <h1><i class="fas fa-boxes"></i> Gestionar Lotes</h1>
         <p><i class="fas fa-tag"></i> Producto: <strong>{{ producto[0] }}</strong></p>
         <p><i class="fas fa-barcode"></i> Código: <span class="codigo-barras">{{ codigo }}</span></p>
-        <a href="/user_pasillo" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver a mi pasillo</a>
+        <div>
+            <a href="/user_pasillo" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver a mi pasillo</a>
+            <button class="btn btn-success" onclick="exportarImagen()"><i class="fas fa-image"></i> Exportar como Imagen</button>
+        </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="capturaTabla">
         <h3><i class="fas fa-calendar-alt"></i> Lotes registrados</h3>
         {% if lotes %}
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto;" id="tablaParaCaptura">
             <table>
                 <thead>
                     <tr>
@@ -293,6 +311,38 @@
         }
         
         darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // FUNCIÓN PARA EXPORTAR COMO IMAGEN
+        function exportarImagen() {
+            const elemento = document.getElementById('tablaParaCaptura');
+            
+            // Mostrar loading
+            const btn = document.querySelector('.btn-success');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            btn.disabled = true;
+            
+            html2canvas(elemento, {
+                scale: 2,
+                backgroundColor: getComputedStyle(document.body).backgroundColor,
+                allowTaint: false,
+                useCORS: true,
+                logging: false
+            }).then(function(canvas) {
+                const enlace = document.createElement('a');
+                enlace.download = `lotes_${new Date().toISOString().slice(0,10)}.png`;
+                enlace.href = canvas.toDataURL('image/png');
+                enlace.click();
+                
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }).catch(function(error) {
+                console.error('Error al generar la imagen:', error);
+                alert('❌ Error al generar la imagen. Intenta de nuevo.');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>
