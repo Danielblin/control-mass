@@ -66,6 +66,15 @@
             background: #3a5a8a;
         }
         
+        body.dark-mode .modal-content {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .form-group label {
+            color: #b0b0c0;
+        }
+        
         .header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
@@ -177,6 +186,16 @@
             transform: translateY(-2px);
         }
         
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
         .btn-sm {
             padding: 5px 10px;
             font-size: 12px;
@@ -281,6 +300,69 @@
             vertical-align: middle;
         }
         
+        /* Modal de edición */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.3rem;
+            border-left: 4px solid #2a5298;
+            padding-left: 10px;
+        }
+        
+        .modal-header h3 i {
+            margin-right: 8px;
+            color: #2a5298;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
         /* Botón modo oscuro flotante */
         .dark-mode-toggle {
             position: fixed;
@@ -365,7 +447,7 @@
                 {% for u in usuarios %}
                 <tr>
                     <td>{{ u[0] }}</td>
-                    <td>{{ u[1] }}<i class="fas fa-user-check"></i> </td>
+                    <td>{{ u[1] }} <i class="fas fa-user-check"></i></td>
                     <td>
                         <span class="password-cell"><i class="fas fa-key"></i> {{ u[2] }}</span>
                         <form class="cambiar-pw-form" method="POST" action="/cambiar_password/{{ u[0] }}">
@@ -382,6 +464,8 @@
                     </td>
                     <td><i class="fas fa-warehouse"></i> {{ u[4] }}</td>
                     <td>
+                        <!-- Botón Editar (nuevo) -->
+                        <button class="btn btn-warning btn-sm" onclick="abrirModalEditar({{ u[0] }}, '{{ u[1] }}', '{{ u[2] }}', '{{ u[3] }}', '{{ u[4] }}')"><i class="fas fa-pencil-alt"></i> Editar</button>
                         <a href="/eliminar_usuario/{{ u[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar usuario?')"><i class="fas fa-trash-alt"></i> Eliminar</a>
                     </td>
                 </tr>
@@ -402,6 +486,41 @@
             <input type="text" name="pasillo" placeholder="Pasillo (ej: Lácteos)" required>
             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Crear usuario</button>
         </form>
+    </div>
+
+    <!-- MODAL: Editar usuario -->
+    <div id="modalEditarUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Editar usuario</h3>
+                <button class="close-modal" onclick="cerrarModalEditar()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formEditarUsuario" method="POST" action="/editar_usuario">
+                <input type="hidden" name="usuario_id" id="edit_usuario_id">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nombre</label>
+                    <input type="text" name="nombre" id="edit_nombre" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="text" name="password" id="edit_password" placeholder="Dejar vacío para no cambiar">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Rol</label>
+                    <select name="rol" id="edit_rol">
+                        <option value="user">Usuario normal</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-warehouse"></i> Pasillo</label>
+                    <input type="text" name="pasillo" id="edit_pasillo" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" onclick="return confirm('¿Confirmar cambios del usuario?')">
+                    <i class="fas fa-save"></i> Guardar cambios
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Botón modo oscuro -->
@@ -425,6 +544,27 @@
         }
         
         darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // Función para abrir modal de editar usuario
+        function abrirModalEditar(id, nombre, password, rol, pasillo) {
+            document.getElementById('edit_usuario_id').value = id;
+            document.getElementById('edit_nombre').value = nombre;
+            document.getElementById('edit_password').value = '';
+            document.getElementById('edit_rol').value = rol;
+            document.getElementById('edit_pasillo').value = pasillo;
+            document.getElementById('modalEditarUsuario').style.display = 'flex';
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modalEditarUsuario').style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
