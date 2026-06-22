@@ -558,7 +558,7 @@ def ver_mermas():
     cursor = conn.cursor()
     
     # Lista de productos para el filtro
-    cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
+    cursor.execute("SELECT codigo, nombre, precio, uxb FROM productos WHERE pasillo=? ORDER BY nombre ASC", (pasillo,))
     productos_lista = cursor.fetchall()
     
     # Construir query

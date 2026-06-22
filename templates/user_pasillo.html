@@ -537,6 +537,10 @@
                 font-size: 0.65rem;
             }
             .menu-icon { font-size: 1.3rem; }
+            .search-box input {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
@@ -600,15 +604,21 @@
         {% endif %}
     </div>
 
-    <!-- Lista de productos -->
+    <!-- Lista de productos con barra de búsqueda -->
     <div class="card">
         <h3><i class="fas fa-clipboard-list"></i> Productos de tu pasillo</h3>
         <div style="margin-bottom:15px;">
             <a href="/exportar_excel" class="btn btn-primary"><i class="fas fa-file-excel"></i> Exportar mi reporte a Excel</a>
         </div>
-        <div class="productos-grid">
+        
+        <!-- BARRA DE BÚSQUEDA -->
+        <div class="search-box" style="margin-bottom: 15px;">
+            <input type="text" id="buscadorProductos" onkeyup="filtrarProductos()" placeholder="🔍 Buscar producto por nombre..." style="width:100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.95rem;">
+        </div>
+        
+        <div class="productos-grid" id="productosGrid">
             {% for p in productos %}
-            <div class="producto-card">
+            <div class="producto-card" data-nombre="{{ p[1].lower() }}">
                 <div class="producto-info">
                     <div class="producto-nombre">{{ p[1] }}</div>
                     <div class="producto-detalle">
@@ -659,7 +669,8 @@
         </button>
     </div>
 
-        <!-- MODAL: Ajustes (⚙️) -->
+    <!-- MODALES -->
+    <!-- MODAL: Ajustes (⚙️) -->
     <div id="modal-ajustes" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -974,6 +985,23 @@
             // Solo cerrar si el modal es el de confirmación
             if (event.target.classList.contains('modal') && event.target.id === 'modalConfirmacion') {
                 event.target.style.display = 'none';
+            }
+        }
+
+        // FUNCIÓN DE BÚSQUEDA PARA PRODUCTOS
+        function filtrarProductos() {
+            const input = document.getElementById('buscadorProductos');
+            const filter = input.value.toLowerCase();
+            const productosGrid = document.getElementById('productosGrid');
+            const productos = productosGrid.getElementsByClassName('producto-card');
+            
+            for (let i = 0; i < productos.length; i++) {
+                const nombre = productos[i].getAttribute('data-nombre');
+                if (nombre.includes(filter)) {
+                    productos[i].style.display = '';
+                } else {
+                    productos[i].style.display = 'none';
+                }
             }
         }
 
