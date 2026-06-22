@@ -111,6 +111,44 @@ def eliminar_usuario_route(user_id):
     eliminar_usuario(user_id)
     return redirect(url_for('admin_panel'))
 
+@app.route('/editar_usuario', methods=['POST'])
+def editar_usuario():
+    if 'user_id' not in session or session['user_rol'] != 'admin':
+        return redirect(url_for('login'))
+    
+    usuario_id = request.form['usuario_id']
+    nombre = request.form['nombre']
+    password = request.form.get('password', '')
+    rol = request.form['rol']
+    pasillo = request.form['pasillo']
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    try:
+        if password.strip():
+            # Si se proporcionó una nueva contraseña, actualizarla
+            cursor.execute("""
+                UPDATE usuarios 
+                SET nombre=?, password=?, rol=?, pasillo_asignado=? 
+                WHERE id=?
+            """, (nombre, password, rol, pasillo, usuario_id))
+        else:
+            # Si no, actualizar sin cambiar la contraseña
+            cursor.execute("""
+                UPDATE usuarios 
+                SET nombre=?, rol=?, pasillo_asignado=? 
+                WHERE id=?
+            """, (nombre, rol, pasillo, usuario_id))
+        
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_panel'))
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return f"❌ Error al editar usuario: {str(e)}"
+
 
 @app.route('/user_pasillo')
 def user_pasillo():
