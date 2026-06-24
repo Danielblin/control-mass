@@ -595,6 +595,9 @@ def ver_todos_lotes():
     fecha_desde = request.args.get('fecha_desde', '')
     fecha_hasta = request.args.get('fecha_hasta', '')
     
+    # ✅ DEFINIR 'hoy' UNA SOLA VEZ
+    hoy = date.today()
+    
     conn = obtener_conexion()
     cursor = conn.cursor()
     
@@ -609,7 +612,7 @@ def ver_todos_lotes():
             l.usuario_registra,
             l.fecha_registro,
             l.id,
-            l.codigo_producto
+            l.codigo_producto,
             julianday(l.fecha_vencimiento) - julianday(?) AS dias_para_vencer
         FROM lotes l
         JOIN productos p ON l.codigo_producto = p.codigo
@@ -621,7 +624,7 @@ def ver_todos_lotes():
         query += " AND p.codigo=?"
         params.append(producto_filtro)
     
-    hoy = date.today()
+    # ❌ ELIMINA ESTA LÍNEA: hoy = date.today()
     if filtro_vencimiento == '7_dias':
         fecha_limite = hoy + timedelta(days=7)
         query += " AND l.fecha_vencimiento <= ? AND l.fecha_vencimiento >= ?"
