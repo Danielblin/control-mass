@@ -160,9 +160,10 @@
                         <td>{{ l[0] }}</td>
                         <td>
                             {{ l[1] }}
-                            {% if l[1] < hoy %}
+                            {% set dias = (l[1] - hoy).days %}
+                            {% if dias < 0 %}
                             <span class="vencido"> (VENCIDO)</span>
-                            {% elif l[1] <= hoy + 7 %}
+                            {% elif dias <= 7 %}
                             <span class="proximo"> (Próximo)</span>
                             {% else %}
                             <span class="vigente"> (Vigente)</span>
@@ -170,9 +171,10 @@
                         </td>
                         <td>{{ l[2] }}</td>
                         <td>
-                            {% if l[1] < hoy %}
+                            {% set dias = (l[1] - hoy).days %}
+                            {% if dias < 0 %}
                             <span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Vencido</span>
-                            {% elif l[1] <= hoy + 7 %}
+                            {% elif dias <= 7 %}
                             <span style="color:#f39c12;"><i class="fas fa-exclamation-triangle"></i> Por vencer</span>
                             {% else %}
                             <span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Vigente</span>
