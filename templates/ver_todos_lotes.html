@@ -160,10 +160,9 @@
                         <td>{{ l[0] }}</td>
                         <td>
                             {{ l[1] }}
-                            {% set dias = (l[1] - hoy).days %}
-                            {% if dias < 0 %}
+                            {% if l[7] < 0 %}
                             <span class="vencido"> (VENCIDO)</span>
-                            {% elif dias <= 7 %}
+                            {% elif l[7] <= 7 %}
                             <span class="proximo"> (Próximo)</span>
                             {% else %}
                             <span class="vigente"> (Vigente)</span>
@@ -171,10 +170,9 @@
                         </td>
                         <td>{{ l[2] }}</td>
                         <td>
-                            {% set dias = (l[1] - hoy).days %}
-                            {% if dias < 0 %}
+                            {% if l[7] < 0 %}
                             <span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Vencido</span>
-                            {% elif dias <= 7 %}
+                            {% elif l[7] <= 7 %}
                             <span style="color:#f39c12;"><i class="fas fa-exclamation-triangle"></i> Por vencer</span>
                             {% else %}
                             <span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Vigente</span>
@@ -195,7 +193,6 @@
     <button class="dark-mode-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></button>
     
     <script>
-        // Modo oscuro
         const darkModeToggle = document.getElementById('darkModeToggle');
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
@@ -208,13 +205,11 @@
         }
         darkModeToggle.addEventListener('click', toggleDarkMode);
         
-        // Exportar a Excel (usando la ruta existente)
         function exportarExcelLotes() {
             const params = new URLSearchParams(window.location.search);
             window.location.href = '/exportar_todos_lotes_excel?' + params.toString();
         }
         
-        // Exportar como Imagen
         function exportarImagenLotes() {
             const elemento = document.getElementById('tablaParaCaptura');
             const btn = document.querySelector('.btn-info');

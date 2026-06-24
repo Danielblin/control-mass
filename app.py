@@ -610,11 +610,12 @@ def ver_todos_lotes():
             l.fecha_registro,
             l.id,
             l.codigo_producto
+            julianday(l.fecha_vencimiento) - julianday(?) AS dias_para_vencer
         FROM lotes l
         JOIN productos p ON l.codigo_producto = p.codigo
         WHERE p.pasillo=?
     """
-    params = [pasillo]
+    params = [hoy.isoformat(), pasillo]
     
     if producto_filtro:
         query += " AND p.codigo=?"
