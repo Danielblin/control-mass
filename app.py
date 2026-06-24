@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from database import obtener_conexion, crear_base_datos
 from auth import verificar_login, listar_usuarios, crear_usuario, eliminar_usuario
 from reports import exportar_reporte_pasillo, exportar_reporte_general, exportar_reporte_completo
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import sqlite3
 import pandas as pd
 import os
@@ -127,14 +127,12 @@ def editar_usuario():
     
     try:
         if password.strip():
-            # Si se proporcionó una nueva contraseña, actualizarla
             cursor.execute("""
                 UPDATE usuarios 
                 SET nombre=?, password=?, rol=?, pasillo_asignado=? 
                 WHERE id=?
             """, (nombre, password, rol, pasillo, usuario_id))
         else:
-            # Si no, actualizar sin cambiar la contraseña
             cursor.execute("""
                 UPDATE usuarios 
                 SET nombre=?, rol=?, pasillo_asignado=? 
@@ -214,7 +212,6 @@ def registrar_conteo():
     stock_pocket = int(request.form['stock_pocket'])
     diferencia = stock_contado - stock_pocket
     
-    # Forzar hora de Perú (UTC-5)
     from datetime import datetime
     import datetime as dt
     ahora_peru = datetime.now(dt.timezone(dt.timedelta(hours=-5)))
@@ -273,7 +270,6 @@ def agregar_producto():
     pasillo = request.form['pasillo']
     uxb = request.form.get('uxb', '')
     
-    # Procesar imagen subida
     imagen_base64 = ''
     if 'imagen' in request.files:
         archivo = request.files['imagen']
@@ -281,7 +277,6 @@ def agregar_producto():
             import base64
             contenido = archivo.read()
             imagen_base64 = base64.b64encode(contenido).decode('utf-8')
-            # Detectar tipo de imagen para el prefijo
             if archivo.content_type:
                 imagen_base64 = f"data:{archivo.content_type};base64,{imagen_base64}"
             else:
@@ -343,7 +338,6 @@ def ver_conteos():
             return redirect(url_for('login'))
         pasillo = session['user_pasillo']
         
-        # Obtener filtros
         producto_filtro = request.args.get('producto', '')
         fecha_filtro = request.args.get('fecha', '')
         usuario_filtro = request.args.get('usuario', '')
@@ -356,15 +350,12 @@ def ver_conteos():
         conn = obtener_conexion()
         cursor = conn.cursor()
         
-        # Lista de productos para el filtro
         cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=?", (pasillo,))
         productos_lista = cursor.fetchall()
         
-        # Lista de usuarios que han hecho conteos (para el filtro)
         cursor.execute("SELECT DISTINCT usuario FROM conteos WHERE usuario IS NOT NULL")
         usuarios_lista = [row[0] for row in cursor.fetchall()]
         
-        # Construir query
         query = """
             SELECT c.fecha, c.hora, p.nombre, c.stock_pocket, c.stock_contado, c.diferencia, c.usuario 
             FROM conteos c 
@@ -389,7 +380,6 @@ def ver_conteos():
         cursor.execute(query, params)
         conteos = cursor.fetchall()
         
-        # Calcular estadísticas
         cursor.execute("SELECT COUNT(*) FROM conteos c JOIN productos p ON c.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
         total_registros = cursor.fetchone()[0]
         
@@ -449,13 +439,9 @@ def eliminar_producto(codigo):
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Eliminar primero los lotes asociados
     cursor.execute("DELETE FROM lotes WHERE codigo_producto=?", (codigo,))
-    # Eliminar conteos asociados
     cursor.execute("DELETE FROM conteos WHERE codigo_producto=?", (codigo,))
-    # Eliminar mermas asociadas
     cursor.execute("DELETE FROM mermas WHERE codigo_producto=?", (codigo,))
-    # Finalmente eliminar el producto
     cursor.execute("DELETE FROM productos WHERE codigo=?", (codigo,))
     
     conn.commit()
@@ -474,7 +460,6 @@ def editar_producto():
     precio = float(request.form['precio'])
     uxb = request.form.get('uxb', '')
     
-    # Procesar imagen si se subió una nueva
     imagen_base64 = None
     if 'imagen' in request.files:
         archivo = request.files['imagen']
@@ -497,7 +482,6 @@ def editar_producto():
                 conn.close()
                 return "❌ Error: El nuevo código de barras ya está en uso por otro producto."
             
-            # Actualizar código en todas las tablas
             if imagen_base64:
                 cursor.execute("UPDATE productos SET codigo=?, nombre=?, precio=?, uxb=?, imagen=? WHERE codigo=?", 
                               (codigo_nuevo, nombre, precio, uxb, imagen_base64, codigo_original))
@@ -527,7 +511,7 @@ def editar_producto():
         conn.close()
         return f"❌ Error al editar producto: {str(e)}"
 
-# ========== NUEVAS RUTAS PARA GESTIÓN DE LOTES ==========
+# ========== GESTIÓN DE LOTES ==========
 
 @app.route('/gestionar_lotes/<codigo>')
 def gestionar_lotes(codigo):
@@ -539,11 +523,9 @@ def gestionar_lotes(codigo):
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Obtener información del producto
     cursor.execute("SELECT nombre FROM productos WHERE codigo=?", (codigo,))
     producto = cursor.fetchone()
     
-    # Obtener todos los lotes del producto
     cursor.execute("""
         SELECT id, fecha_vencimiento, cantidad, usuario_registra, fecha_registro 
         FROM lotes 
@@ -571,11 +553,9 @@ def editar_lote(lote_id):
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Actualizar la cantidad del lote
     cursor.execute("UPDATE lotes SET cantidad=? WHERE id=?", (nueva_cantidad, lote_id))
     conn.commit()
     
-    # Obtener el código del producto para redirigir
     cursor.execute("SELECT codigo_producto FROM lotes WHERE id=?", (lote_id,))
     codigo = cursor.fetchone()[0]
     conn.close()
@@ -591,19 +571,217 @@ def eliminar_lote(lote_id):
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Obtener código del producto antes de eliminar
     cursor.execute("SELECT codigo_producto FROM lotes WHERE id=?", (lote_id,))
     codigo = cursor.fetchone()[0]
     
-    # Eliminar el lote
     cursor.execute("DELETE FROM lotes WHERE id=?", (lote_id,))
     conn.commit()
     conn.close()
     
     return redirect(url_for('gestionar_lotes', codigo=codigo))
 
+# ========== VER TODOS LOS LOTES ==========
 
-# ========== FIN NUEVAS RUTAS ==========
+@app.route('/ver_todos_lotes')
+def ver_todos_lotes():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    usuario = session['user_nombre']
+    pasillo = session['user_pasillo']
+    
+    producto_filtro = request.args.get('producto', '')
+    filtro_vencimiento = request.args.get('filtro_vencimiento', '')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT codigo, nombre FROM productos WHERE pasillo=? ORDER BY nombre ASC", (pasillo,))
+    productos_lista = cursor.fetchall()
+    
+    query = """
+        SELECT 
+            p.nombre AS producto,
+            l.fecha_vencimiento,
+            l.cantidad,
+            l.usuario_registra,
+            l.fecha_registro,
+            l.id,
+            l.codigo_producto
+        FROM lotes l
+        JOIN productos p ON l.codigo_producto = p.codigo
+        WHERE p.pasillo=?
+    """
+    params = [pasillo]
+    
+    if producto_filtro:
+        query += " AND p.codigo=?"
+        params.append(producto_filtro)
+    
+    hoy = date.today()
+    if filtro_vencimiento == '7_dias':
+        fecha_limite = hoy + timedelta(days=7)
+        query += " AND l.fecha_vencimiento <= ? AND l.fecha_vencimiento >= ?"
+        params.append(fecha_limite.isoformat())
+        params.append(hoy.isoformat())
+    elif filtro_vencimiento == 'este_mes':
+        inicio_mes = hoy.replace(day=1)
+        if inicio_mes.month == 12:
+            fin_mes = inicio_mes.replace(month=12, day=31)
+        else:
+            fin_mes = inicio_mes.replace(month=inicio_mes.month + 1, day=1) - timedelta(days=1)
+        query += " AND l.fecha_vencimiento BETWEEN ? AND ?"
+        params.append(inicio_mes.isoformat())
+        params.append(fin_mes.isoformat())
+    elif filtro_vencimiento == 'proximo_mes':
+        inicio_prox = (hoy.replace(day=1) + timedelta(days=32)).replace(day=1)
+        if inicio_prox.month == 12:
+            fin_prox = inicio_prox.replace(month=12, day=31)
+        else:
+            fin_prox = inicio_prox.replace(month=inicio_prox.month + 1, day=1) - timedelta(days=1)
+        query += " AND l.fecha_vencimiento BETWEEN ? AND ?"
+        params.append(inicio_prox.isoformat())
+        params.append(fin_prox.isoformat())
+    elif filtro_vencimiento == 'vencidos':
+        query += " AND l.fecha_vencimiento < ?"
+        params.append(hoy.isoformat())
+    
+    if fecha_desde:
+        query += " AND l.fecha_vencimiento >= ?"
+        params.append(fecha_desde)
+    if fecha_hasta:
+        query += " AND l.fecha_vencimiento <= ?"
+        params.append(fecha_hasta)
+    
+    query += " ORDER BY l.fecha_vencimiento ASC"
+    
+    cursor.execute(query, params)
+    lotes = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT COUNT(*) FROM lotes l
+        JOIN productos p ON l.codigo_producto = p.codigo
+        WHERE p.pasillo=?
+    """, (pasillo,))
+    total_lotes = cursor.fetchone()[0]
+    
+    cursor.execute("""
+        SELECT COUNT(*) FROM lotes l
+        JOIN productos p ON l.codigo_producto = p.codigo
+        WHERE p.pasillo=? AND l.fecha_vencimiento < ?
+    """, (pasillo, hoy.isoformat()))
+    vencidos = cursor.fetchone()[0]
+    
+    cursor.execute("""
+        SELECT COUNT(*) FROM lotes l
+        JOIN productos p ON l.codigo_producto = p.codigo
+        WHERE p.pasillo=? AND l.fecha_vencimiento BETWEEN ? AND ?
+    """, (pasillo, hoy.isoformat(), (hoy + timedelta(days=7)).isoformat()))
+    proximos_7 = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return render_template('ver_todos_lotes.html',
+                         lotes=lotes,
+                         productos=productos_lista,
+                         total_lotes=total_lotes,
+                         vencidos=vencidos,
+                         proximos_7=proximos_7,
+                         producto_filtro=producto_filtro,
+                         filtro_vencimiento=filtro_vencimiento,
+                         fecha_desde=fecha_desde,
+                         fecha_hasta=fecha_hasta,
+                         usuario=usuario,
+                         pasillo=pasillo,
+                         hoy=hoy.isoformat())
+
+# ========== FIN VER TODOS LOS LOTES ==========
+
+# ========== EXPORTAR TODOS LOS LOTES A EXCEL ==========
+
+@app.route('/exportar_todos_lotes_excel')
+def exportar_todos_lotes_excel():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    pasillo = session['user_pasillo']
+    producto_filtro = request.args.get('producto', '')
+    filtro_vencimiento = request.args.get('filtro_vencimiento', '')
+    fecha_desde = request.args.get('fecha_desde', '')
+    fecha_hasta = request.args.get('fecha_hasta', '')
+    
+    conn = obtener_conexion()
+    
+    query = """
+        SELECT 
+            p.nombre AS Producto,
+            l.fecha_vencimiento AS 'Fecha Vencimiento',
+            l.cantidad AS Cantidad,
+            CASE 
+                WHEN l.fecha_vencimiento < date('now') THEN 'Vencido'
+                WHEN l.fecha_vencimiento <= date('now', '+7 days') THEN 'Por vencer'
+                ELSE 'Vigente'
+            END AS Estado,
+            l.usuario_registra AS 'Registrado por',
+            l.fecha_registro AS 'Fecha Registro'
+        FROM lotes l
+        JOIN productos p ON l.codigo_producto = p.codigo
+        WHERE p.pasillo=?
+    """
+    params = [pasillo]
+    
+    if producto_filtro:
+        query += " AND p.codigo=?"
+        params.append(producto_filtro)
+    
+    hoy = date.today()
+    if filtro_vencimiento == '7_dias':
+        fecha_limite = hoy + timedelta(days=7)
+        query += " AND l.fecha_vencimiento <= ? AND l.fecha_vencimiento >= ?"
+        params.append(fecha_limite.isoformat())
+        params.append(hoy.isoformat())
+    elif filtro_vencimiento == 'este_mes':
+        inicio_mes = hoy.replace(day=1)
+        if inicio_mes.month == 12:
+            fin_mes = inicio_mes.replace(month=12, day=31)
+        else:
+            fin_mes = inicio_mes.replace(month=inicio_mes.month + 1, day=1) - timedelta(days=1)
+        query += " AND l.fecha_vencimiento BETWEEN ? AND ?"
+        params.append(inicio_mes.isoformat())
+        params.append(fin_mes.isoformat())
+    elif filtro_vencimiento == 'proximo_mes':
+        inicio_prox = (hoy.replace(day=1) + timedelta(days=32)).replace(day=1)
+        if inicio_prox.month == 12:
+            fin_prox = inicio_prox.replace(month=12, day=31)
+        else:
+            fin_prox = inicio_prox.replace(month=inicio_prox.month + 1, day=1) - timedelta(days=1)
+        query += " AND l.fecha_vencimiento BETWEEN ? AND ?"
+        params.append(inicio_prox.isoformat())
+        params.append(fin_prox.isoformat())
+    elif filtro_vencimiento == 'vencidos':
+        query += " AND l.fecha_vencimiento < ?"
+        params.append(hoy.isoformat())
+    
+    if fecha_desde:
+        query += " AND l.fecha_vencimiento >= ?"
+        params.append(fecha_desde)
+    if fecha_hasta:
+        query += " AND l.fecha_vencimiento <= ?"
+        params.append(fecha_hasta)
+    
+    query += " ORDER BY l.fecha_vencimiento ASC"
+    
+    df = pd.read_sql_query(query, conn, params=params)
+    conn.close()
+    
+    nombre_archivo = f'todos_lotes_{pasillo}_{date.today()}.xlsx'
+    df.to_excel(nombre_archivo, index=False, sheet_name='Todos los lotes')
+    
+    return send_file(nombre_archivo, as_attachment=True)
+
+# ========== FIN EXPORTAR TODOS LOS LOTES ==========
 
 @app.route('/logout')
 def logout():
@@ -618,7 +796,6 @@ def ver_mermas():
         return redirect(url_for('login'))
     pasillo = session['user_pasillo']
     
-    # Obtener filtros
     producto_filtro = request.args.get('producto', '')
     motivo_filtro = request.args.get('motivo', '')
     fecha_desde = request.args.get('fecha_desde', '')
@@ -627,11 +804,9 @@ def ver_mermas():
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Lista de productos para el filtro
     cursor.execute("SELECT codigo, nombre, precio, uxb FROM productos WHERE pasillo=? ORDER BY nombre ASC", (pasillo,))
     productos_lista = cursor.fetchall()
     
-    # Construir query
     query = """
         SELECT m.fecha, p.nombre, m.cantidad, m.motivo, m.usuario, m.id
         FROM mermas m
@@ -658,7 +833,6 @@ def ver_mermas():
     cursor.execute(query, params)
     mermas = cursor.fetchall()
     
-    # Calcular estadísticas
     cursor.execute("SELECT COUNT(*) FROM mermas m JOIN productos p ON m.codigo_producto = p.codigo WHERE p.pasillo=?", (pasillo,))
     total_mermas = cursor.fetchone()[0]
     
@@ -716,7 +890,6 @@ def notas():
         return redirect(url_for('login'))
     usuario = session['user_nombre']
     
-    # Obtener filtros
     estado_filtro = request.args.get('estado', '')
     prioridad_filtro = request.args.get('prioridad', '')
     
@@ -738,7 +911,6 @@ def notas():
     cursor.execute(query, params)
     notas = cursor.fetchall()
     
-    # Estadísticas
     cursor.execute("SELECT COUNT(*) FROM notas WHERE usuario=?", (usuario,))
     total_notas = cursor.fetchone()[0]
     
@@ -823,18 +995,12 @@ def eliminar_nota(nota_id):
 
 # ========== FIN NOTAS ==========
 
-if __name__ == '__main__':
-    # ✅ aquí recién se ejecuta en local (NO en Render)
-    crear_base_datos()
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
 @app.route('/exportar_mermas_excel')
 def exportar_mermas_excel():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     pasillo = session['user_pasillo']
     
-    # Obtener filtros de la URL
     producto_filtro = request.args.get('producto', '')
     motivo_filtro = request.args.get('motivo', '')
     fecha_desde = request.args.get('fecha_desde', '')
@@ -842,7 +1008,6 @@ def exportar_mermas_excel():
     
     conn = obtener_conexion()
     
-    # Construir query
     query = """
         SELECT m.fecha, p.nombre, m.cantidad, m.motivo, m.usuario
         FROM mermas m
@@ -866,15 +1031,16 @@ def exportar_mermas_excel():
     
     query += " ORDER BY m.fecha DESC"
     
-    # Ejecutar query y crear DataFrame
     df = pd.read_sql_query(query, conn, params=params)
     conn.close()
     
-    # Renombrar columnas
     df.columns = ['Fecha', 'Producto', 'Cantidad', 'Motivo', 'Usuario']
     
-    # Crear archivo Excel
     nombre_archivo = f'mermas_{pasillo}_{date.today()}.xlsx'
     df.to_excel(nombre_archivo, index=False, sheet_name='Mermas')
     
     return send_file(nombre_archivo, as_attachment=True)
+
+if __name__ == '__main__':
+    crear_base_datos()
+    app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Todos los Lotes - Control Mass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #1a1a2e; transition: background 0.3s, color 0.3s; }
+        
+        body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        body.dark-mode .card { background: #2d2d44; }
+        body.dark-mode .stat-card { background: #2d2d44; }
+        body.dark-mode th { background: #4a6a9a; }
+        body.dark-mode td { border-bottom-color: #4a4a6a; }
+        body.dark-mode input, body.dark-mode select { background: #3a3a5a; border-color: #5a5a7a; color: #e0e0e0; }
+        body.dark-mode .btn-primary { background: #4a6a9a; }
+        
+        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        body.dark-mode .header { background: linear-gradient(135deg, #2a2a4a 0%, #3a3a6a 100%); }
+        
+        .btn { padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-primary:hover { background: #1e3c72; transform: translateY(-2px); }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; transform: translateY(-2px); }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 20px; text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        .stat-card.total .stat-number { color: #2a5298; }
+        .stat-card.vencidos .stat-number { color: #e74c3c; }
+        .stat-card.proximos .stat-number { color: #f39c12; }
+        
+        .card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        .card h3 { margin-bottom: 15px; border-left: 4px solid #2a5298; padding-left: 12px; }
+        .card h3 i { margin-right: 8px; color: #2a5298; }
+        
+        .filter-group { display: inline-block; margin: 5px 10px 5px 0; }
+        label { font-weight: 600; font-size: 0.8rem; color: #555; margin-right: 5px; }
+        body.dark-mode label { color: #b0b0c0; }
+        select, input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.85rem; }
+        
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #2a5298; color: white; font-weight: 600; }
+        .vencido { color: #e74c3c; font-weight: bold; }
+        .proximo { color: #f39c12; font-weight: bold; }
+        .vigente { color: #27ae60; }
+        
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        #capturaTabla { background: white; padding: 20px; border-radius: 16px; }
+        body.dark-mode #capturaTabla { background: #2d2d44; }
+        
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            th, td { padding: 8px; font-size: 0.7rem; }
+            .filter-group { display: block; margin-bottom: 10px; }
+            select, input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2><i class="fas fa-boxes"></i> Todos los Lotes</h2>
+        <p><i class="fas fa-warehouse"></i> Pasillo: {{ pasillo }} · <i class="fas fa-user"></i> {{ usuario }}</p>
+    </div>
+    
+    <div>
+        <a href="/user_pasillo" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver a mi pasillo</a>
+        <button class="btn btn-success" onclick="exportarExcelLotes()"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+        <button class="btn btn-info" onclick="exportarImagenLotes()"><i class="fas fa-image"></i> Exportar como Imagen</button>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card total"><div class="stat-number">{{ total_lotes }}</div><div><i class="fas fa-database"></i> Total lotes</div></div>
+        <div class="stat-card vencidos"><div class="stat-number">{{ vencidos }}</div><div><i class="fas fa-times-circle"></i> Vencidos</div></div>
+        <div class="stat-card proximos"><div class="stat-number">{{ proximos_7 }}</div><div><i class="fas fa-clock"></i> Vencen en 7 días</div></div>
+    </div>
+    
+    <div class="card">
+        <h3><i class="fas fa-filter"></i> Filtros</h3>
+        <form method="GET">
+            <div class="filter-group">
+                <label>Producto:</label>
+                <select name="producto">
+                    <option value="">Todos</option>
+                    {% for p in productos %}
+                    <option value="{{ p[0] }}" {% if producto_filtro == p[0] %}selected{% endif %}>{{ p[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Vencimiento:</label>
+                <select name="filtro_vencimiento">
+                    <option value="">Todos</option>
+                    <option value="7_dias" {% if filtro_vencimiento == '7_dias' %}selected{% endif %}>Próximos 7 días</option>
+                    <option value="este_mes" {% if filtro_vencimiento == 'este_mes' %}selected{% endif %}>Este mes</option>
+                    <option value="proximo_mes" {% if filtro_vencimiento == 'proximo_mes' %}selected{% endif %}>Próximo mes</option>
+                    <option value="vencidos" {% if filtro_vencimiento == 'vencidos' %}selected{% endif %}>Ya vencidos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Fecha desde:</label>
+                <input type="date" name="fecha_desde" value="{{ fecha_desde }}">
+            </div>
+            <div class="filter-group">
+                <label>Fecha hasta:</label>
+                <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}">
+            </div>
+            <button type="submit" class="btn btn-info"><i class="fas fa-search"></i> Filtrar</button>
+            <a href="/ver_todos_lotes" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpiar</a>
+        </form>
+    </div>
+    
+    <div class="card" id="capturaTabla">
+        <h3><i class="fas fa-list"></i> Lotes ({{ lotes|length }} registros)</h3>
+        <div class="table-responsive" id="tablaParaCaptura">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Fecha vencimiento</th>
+                        <th>Cantidad</th>
+                        <th>Estado</th>
+                        <th>Registrado por</th>
+                        <th>Fecha registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lotes %}
+                    <tr>
+                        <td>{{ l[0] }}</td>
+                        <td>
+                            {{ l[1] }}
+                            {% if l[1] < hoy %}
+                            <span class="vencido"> (VENCIDO)</span>
+                            {% elif l[1] <= hoy + 7 %}
+                            <span class="proximo"> (Próximo)</span>
+                            {% else %}
+                            <span class="vigente"> (Vigente)</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ l[2] }}</td>
+                        <td>
+                            {% if l[1] < hoy %}
+                            <span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Vencido</span>
+                            {% elif l[1] <= hoy + 7 %}
+                            <span style="color:#f39c12;"><i class="fas fa-exclamation-triangle"></i> Por vencer</span>
+                            {% else %}
+                            <span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Vigente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ l[3] }}</td>
+                        <td>{{ l[4] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if lotes|length == 0 %}
+        <p><i class="fas fa-info-circle"></i> No hay lotes que coincidan con los filtros.</p>
+        {% endif %}
+    </div>
+    
+    <button class="dark-mode-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></button>
+    
+    <script>
+        // Modo oscuro
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            darkModeToggle.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+        
+        // Exportar a Excel (usando la ruta existente)
+        function exportarExcelLotes() {
+            const params = new URLSearchParams(window.location.search);
+            window.location.href = '/exportar_todos_lotes_excel?' + params.toString();
+        }
+        
+        // Exportar como Imagen
+        function exportarImagenLotes() {
+            const elemento = document.getElementById('tablaParaCaptura');
+            const btn = document.querySelector('.btn-info');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            btn.disabled = true;
+            
+            html2canvas(elemento, {
+                scale: 2,
+                backgroundColor: getComputedStyle(document.body).backgroundColor,
+                allowTaint: false,
+                useCORS: true,
+                logging: false
+            }).then(function(canvas) {
+                const enlace = document.createElement('a');
+                enlace.download = `todos_lotes_${new Date().toISOString().slice(0,10)}.png`;
+                enlace.href = canvas.toDataURL('image/png');
+                enlace.click();
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }).catch(function(error) {
+                alert('❌ Error al generar la imagen.');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
