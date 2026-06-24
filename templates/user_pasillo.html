@@ -678,16 +678,16 @@
         <h3><i class="fas fa-pallet"></i> Gestionar lotes por producto</h3>
         
         <!-- BARRA DE BÚSQUEDA Y FILTRO DE CANTIDAD -->
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
             <input type="text" id="buscadorLotes" onkeyup="filtrarTablaLotes()" placeholder="🔍 Buscar producto..." style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.9rem;">
             <select id="filtroCantidadLotes" onchange="filtrarTablaLotes()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 0.9rem;">
-                <option value="10"> 50 productos</option>
+                <option value="10" selected>10 productos</option>
                 <option value="20">20 productos</option>
-                <option value="50" selected>10 productos</option>
+                <option value="50">50 productos</option>
                 <option value="100">100 productos</option>
                 <option value="999999">Todos</option>
             </select>
-        </div>
+</div>
         
         <div class="table-responsive">
             <table>
