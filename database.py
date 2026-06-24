@@ -21,7 +21,7 @@ def crear_base_datos():
         )
     ''')
     
-    # Tabla de productos
+    # Tabla de productos (CON COLUMNA IMAGEN)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             codigo TEXT PRIMARY KEY,
@@ -29,7 +29,8 @@ def crear_base_datos():
             precio REAL,
             pasillo TEXT,
             usuario_responsable TEXT,
-            uxb TEXT
+            uxb TEXT,
+            imagen TEXT
         )
     ''')
     
@@ -103,7 +104,7 @@ def crear_base_datos():
         cursor.execute("INSERT INTO usuarios (nombre, password, rol, pasillo_asignado) VALUES (?, ?, ?, ?)",
                        ('Carlos', 'carlos123', 'user', 'Lácteos y Abarrotes'))
     
-    # Lista de productos para Carlos
+    # Lista de productos para Carlos (con imagen vacía por defecto)
     productos_carlos = [
         ('7751271034319', 'PURA VIDA MEZCLA LACTEA LT390G 6PK', 12.00, 'CJ 8 UN'),
         ('7751271034180', 'GLORIA LECHE ZERO LACTO LT390G', 4.00, 'CJ 24 UN'),
@@ -186,15 +187,21 @@ def crear_base_datos():
         cursor.execute("SELECT codigo FROM productos WHERE codigo=?", (producto[0],))
         if not cursor.fetchone():
             cursor.execute("""
-                INSERT INTO productos (codigo, nombre, precio, pasillo, usuario_responsable, uxb)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (producto[0], producto[1], producto[2], 'Lácteos y Abarrotes', 'Carlos', producto[3]))
+                INSERT INTO productos (codigo, nombre, precio, pasillo, usuario_responsable, uxb, imagen)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (producto[0], producto[1], producto[2], 'Lácteos y Abarrotes', 'Carlos', producto[3], ''))
     
     # ========== FIN PRODUCTOS CARLOS ==========
     
     # Si la tabla conteos ya existía sin la columna hora, agrégala
     try:
         cursor.execute("ALTER TABLE conteos ADD COLUMN hora TEXT")
+    except:
+        pass  # La columna ya existe
+    
+    # Si la tabla productos no tiene columna imagen, agrégala
+    try:
+        cursor.execute("ALTER TABLE productos ADD COLUMN imagen TEXT")
     except:
         pass  # La columna ya existe
     

@@ -157,7 +157,7 @@ def user_pasillo():
     pasillo = session['user_pasillo']
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("SELECT codigo, nombre, precio, uxb FROM productos WHERE pasillo=?", (pasillo,))
+    cursor.execute("SELECT codigo, nombre, precio, uxb, imagen FROM productos WHERE pasillo=?", (pasillo,))
     productos_raw = cursor.fetchall()
     
     productos = []
@@ -176,7 +176,7 @@ def user_pasillo():
         else:
             stock = 0
             diferencia = 0
-        productos.append((p[0], p[1], p[2], p[3], stock, diferencia))
+        productos.append((p[0], p[1], p[2], p[3], stock, diferencia, p[4] if p[4] else ''))
     
     cursor.execute("""
         SELECT p.nombre, l.fecha_vencimiento, l.cantidad, l.codigo_producto 
@@ -271,31 +271,29 @@ def agregar_producto():
     precio = float(request.form['precio'])
     pasillo = request.form['pasillo']
     uxb = request.form.get('uxb', '')
+    imagen = request.form.get('imagen', '')  # URL de la imagen
     
     conn = obtener_conexion()
     cursor = conn.cursor()
     
-    # Verificar si el producto ya existe
     cursor.execute("SELECT codigo FROM productos WHERE codigo=?", (codigo,))
     existe = cursor.fetchone()
     
     if existe:
-        # Si ya existe, actualizar los datos
         cursor.execute("""
             UPDATE productos 
-            SET nombre=?, precio=?, pasillo=?, usuario_responsable=?, uxb=? 
+            SET nombre=?, precio=?, pasillo=?, usuario_responsable=?, uxb=?, imagen=? 
             WHERE codigo=?
-        """, (nombre, precio, pasillo, session['user_nombre'], uxb, codigo))
+        """, (nombre, precio, pasillo, session['user_nombre'], uxb, imagen, codigo))
         conn.commit()
         conn.close()
         return redirect(url_for('user_pasillo'))
     else:
-        # Si no existe, insertar nuevo
         try:
             cursor.execute("""
-                INSERT INTO productos (codigo, nombre, precio, pasillo, usuario_responsable, uxb) 
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (codigo, nombre, precio, pasillo, session['user_nombre'], uxb))
+                INSERT INTO productos (codigo, nombre, precio, pasillo, usuario_responsable, uxb, imagen) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (codigo, nombre, precio, pasillo, session['user_nombre'], uxb, imagen))
             conn.commit()
             conn.close()
             return redirect(url_for('user_pasillo'))
