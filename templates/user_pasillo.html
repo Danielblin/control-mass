@@ -1208,29 +1208,34 @@
         }
 
         // FUNCIÓN PARA FILTRAR LA TABLA DE LOTES (con búsqueda y cantidad)
-        function filtrarTablaLotes() {
-            const input = document.getElementById('buscadorLotes');
-            const filter = input.value.toLowerCase();
-            const cantidadSelect = document.getElementById('filtroCantidadLotes');
-            const limite = parseInt(cantidadSelect.value);
-            // 👇 Agrega esta línea para depurar
-            console.log('Límite seleccionado:', limite);
-            const filas = document.getElementById('tablaLotesBody').getElementsByTagName('tr');
-            let visibles = 0;
-            
-            for (let i = 0; i < filas.length; i++) {
-                const nombre = filas[i].getAttribute('data-nombre');
-                const coincideBusqueda = nombre && nombre.includes(filter);
-                const dentroLimite = visibles < limite;
-                
-            if (coincideBusqueda && dentroLimite) {
-                filas[i].style.display = '';
-                visibles++;
+function filtrarTablaLotes() {
+    const input = document.getElementById('buscadorLotes');
+    const filter = input.value.toLowerCase();
+    const cantidadSelect = document.getElementById('filtroCantidadLotes');
+    const limite = parseInt(cantidadSelect.value);
+    
+    const filas = document.getElementById('tablaLotesBody').getElementsByTagName('tr');
+    let visibles = 0;
+    
+    for (let i = 0; i < filas.length; i++) {
+        const nombre = filas[i].getAttribute('data-nombre');
+        const coincideBusqueda = nombre && nombre.includes(filter);
+        const dentroLimite = visibles < limite;
+        
+        if (coincideBusqueda && dentroLimite) {
+            filas[i].style.display = '';
+            visibles++;
         } else {
             filas[i].style.display = 'none';
         }
     }
 }
+
+// 👇 AGREGAR ESTO AL FINAL DEL SCRIPT
+// Ejecutar el filtro al cargar la página para mostrar 10 registros
+document.addEventListener('DOMContentLoaded', function() {
+    filtrarTablaLotes();
+});
 
         // FUNCIÓN PARA ABRIR MODAL DE IMAGEN AMPLIADA
         function abrirModalImagen(url, nombre) {
