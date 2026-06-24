@@ -290,6 +290,7 @@
 
         .producto-info {
             flex: 1;
+            overflow: hidden;
         }
 
         .producto-nombre {
@@ -521,6 +522,89 @@
             background: #138496;
         }
 
+        /* Estilos para imágenes de productos */
+        .producto-imagen {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            float: left;
+            margin-right: 12px;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .producto-imagen:hover {
+            transform: scale(1.05);
+            border-color: #2a5298;
+        }
+        
+        body.dark-mode .producto-imagen:hover {
+            border-color: #6a8acc;
+        }
+        
+        .producto-imagen-placeholder {
+            width: 80px;
+            height: 80px;
+            background: #e9ecef;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            float: left;
+            margin-right: 12px;
+            color: #999;
+            font-size: 2rem;
+        }
+        
+        body.dark-mode .producto-imagen-placeholder {
+            background: #3a3a5a;
+            color: #6a8acc;
+        }
+
+        /* Modal de imagen ampliada */
+        #modalImagen .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            text-align: center;
+        }
+        
+        #modalImagen img {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 16px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-imagen-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            z-index: 210;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: background 0.2s;
+        }
+        
+        .modal-imagen-close:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
         /* Responsive - CORREGIDO */
         @media (max-width: 768px) {
             body { padding: 12px; padding-bottom: 80px; }
@@ -540,6 +624,15 @@
             .search-box input {
                 font-size: 0.9rem;
                 padding: 8px 12px;
+            }
+            .producto-imagen {
+                width: 60px;
+                height: 60px;
+            }
+            .producto-imagen-placeholder {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -633,24 +726,34 @@
             {% for p in productos %}
             <div class="producto-card" data-nombre="{{ p[1].lower() }}">
                 <div class="producto-info">
-                    <div class="producto-nombre">{{ p[1] }}</div>
-                    <div class="producto-detalle">
-                        <span><i class="fas fa-barcode"></i> {{ p[0] }}</span>
-                        <span><i class="fas fa-tag"></i> S/ {{ p[2] }}</span>
-                        <span><i class="fas fa-cube"></i> {{ p[3] if p[3] else 'No registrado' }}</span>
-                        <span><i class="fas fa-box"></i> <span class="stock-actual">{{ p[4] }} unidades</span></span>
+                    <!-- IMAGEN DEL PRODUCTO -->
+                    {% if p[6] and p[6]|trim != '' %}
+                    <img src="{{ p[6] }}" alt="{{ p[1] }}" class="producto-imagen" onclick="abrirModalImagen('{{ p[6] }}', '{{ p[1] }}')" title="Clic para ampliar">
+                    {% else %}
+                    <div class="producto-imagen-placeholder" title="Sin imagen">
+                        <i class="fas fa-box"></i>
                     </div>
-                    <div class="diferencia 
-                        {% if p[5] < 0 %}negativa
-                        {% elif p[5] > 0 %}positiva
-                        {% else %}cero{% endif %}">
-                        {% if p[5] < 0 %}
-                            <i class="fas fa-arrow-down"></i> {{ p[5] }} (faltante)
-                        {% elif p[5] > 0 %}
-                            <i class="fas fa-arrow-up"></i> +{{ p[5] }} (sobrante)
-                        {% else %}
-                            <i class="fas fa-check"></i> 0 (correcto)
-                        {% endif %}
+                    {% endif %}
+                    <div style="overflow: hidden;">
+                        <div class="producto-nombre">{{ p[1] }}</div>
+                        <div class="producto-detalle">
+                            <span><i class="fas fa-barcode"></i> {{ p[0] }}</span>
+                            <span><i class="fas fa-tag"></i> S/ {{ p[2] }}</span>
+                            <span><i class="fas fa-cube"></i> {{ p[3] if p[3] else 'No registrado' }}</span>
+                            <span><i class="fas fa-box"></i> <span class="stock-actual">{{ p[4] }} unidades</span></span>
+                        </div>
+                        <div class="diferencia 
+                            {% if p[5] < 0 %}negativa
+                            {% elif p[5] > 0 %}positiva
+                            {% else %}cero{% endif %}">
+                            {% if p[5] < 0 %}
+                                <i class="fas fa-arrow-down"></i> {{ p[5] }} (faltante)
+                            {% elif p[5] > 0 %}
+                                <i class="fas fa-arrow-up"></i> +{{ p[5] }} (sobrante)
+                            {% else %}
+                                <i class="fas fa-check"></i> 0 (correcto)
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="producto-acciones">
@@ -848,7 +951,7 @@
         </div>
     </div>
 
-    <!-- MODAL: Agregar producto -->
+    <!-- MODAL: Agregar producto (CON CAMPO DE IMAGEN) -->
     <div id="modal-producto" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -871,6 +974,10 @@
                 <div class="form-group">
                     <label>UxB (Unidades por caja/paquete)</label>
                     <input type="text" name="uxb" placeholder="Ej: CJ 24 UN">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> URL de la imagen</label>
+                    <input type="text" name="imagen" placeholder="https://ejemplo.com/imagen.jpg">
                 </div>
                 <input type="hidden" name="pasillo" value="{{ pasillo }}">
                 <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Agregar producto</button>
@@ -897,6 +1004,15 @@
                     <i class="fas fa-times-circle"></i> Cancelar
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Imagen ampliada -->
+    <div id="modalImagen" class="modal" onclick="cerrarModalImagen()">
+        <div class="modal-content">
+            <button class="modal-imagen-close" onclick="cerrarModalImagen()"><i class="fas fa-times"></i></button>
+            <img id="imagenAmpliada" src="" alt="Producto">
+            <p id="nombreImagenAmpliada" style="color: white; text-align: center; margin-top: 15px; font-size: 1.2rem; text-shadow: 0 2px 8px rgba(0,0,0,0.5);"></p>
         </div>
     </div>
 
@@ -1101,6 +1217,20 @@
                     filas[i].style.display = 'none';
                 }
             }
+        }
+
+        // FUNCIÓN PARA ABRIR MODAL DE IMAGEN AMPLIADA
+        function abrirModalImagen(url, nombre) {
+            document.getElementById('imagenAmpliada').src = url;
+            document.getElementById('nombreImagenAmpliada').textContent = nombre || 'Producto';
+            document.getElementById('modalImagen').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // FUNCIÓN PARA CERRAR MODAL DE IMAGEN AMPLIADA
+        function cerrarModalImagen() {
+            document.getElementById('modalImagen').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         // Modo oscuro / claro
