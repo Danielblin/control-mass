@@ -266,12 +266,26 @@ def registrar_merma():
 def agregar_producto():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    
     codigo = request.form['codigo']
     nombre = request.form['nombre']
     precio = float(request.form['precio'])
     pasillo = request.form['pasillo']
     uxb = request.form.get('uxb', '')
-    imagen = request.form.get('imagen', '')  # URL de la imagen
+    
+    # Procesar imagen subida
+    imagen_base64 = ''
+    if 'imagen' in request.files:
+        archivo = request.files['imagen']
+        if archivo.filename != '':
+            import base64
+            contenido = archivo.read()
+            imagen_base64 = base64.b64encode(contenido).decode('utf-8')
+            # Detectar tipo de imagen para el prefijo
+            if archivo.content_type:
+                imagen_base64 = f"data:{archivo.content_type};base64,{imagen_base64}"
+            else:
+                imagen_base64 = f"data:image/jpeg;base64,{imagen_base64}"
     
     conn = obtener_conexion()
     cursor = conn.cursor()
@@ -284,7 +298,7 @@ def agregar_producto():
             UPDATE productos 
             SET nombre=?, precio=?, pasillo=?, usuario_responsable=?, uxb=?, imagen=? 
             WHERE codigo=?
-        """, (nombre, precio, pasillo, session['user_nombre'], uxb, imagen, codigo))
+        """, (nombre, precio, pasillo, session['user_nombre'], uxb, imagen_base64, codigo))
         conn.commit()
         conn.close()
         return redirect(url_for('user_pasillo'))
@@ -293,7 +307,7 @@ def agregar_producto():
             cursor.execute("""
                 INSERT INTO productos (codigo, nombre, precio, pasillo, usuario_responsable, uxb, imagen) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (codigo, nombre, precio, pasillo, session['user_nombre'], uxb, imagen))
+            """, (codigo, nombre, precio, pasillo, session['user_nombre'], uxb, imagen_base64))
             conn.commit()
             conn.close()
             return redirect(url_for('user_pasillo'))
@@ -460,20 +474,37 @@ def editar_producto():
     precio = float(request.form['precio'])
     uxb = request.form.get('uxb', '')
     
+    # Procesar imagen si se subió una nueva
+    imagen_base64 = None
+    if 'imagen' in request.files:
+        archivo = request.files['imagen']
+        if archivo.filename != '':
+            import base64
+            contenido = archivo.read()
+            imagen_base64 = base64.b64encode(contenido).decode('utf-8')
+            if archivo.content_type:
+                imagen_base64 = f"data:{archivo.content_type};base64,{imagen_base64}"
+            else:
+                imagen_base64 = f"data:image/jpeg;base64,{imagen_base64}"
+    
     conn = obtener_conexion()
     cursor = conn.cursor()
     
     try:
         if codigo_original != codigo_nuevo:
-            # Verificar si el nuevo código ya existe
             cursor.execute("SELECT codigo FROM productos WHERE codigo=?", (codigo_nuevo,))
             if cursor.fetchone():
                 conn.close()
                 return "❌ Error: El nuevo código de barras ya está en uso por otro producto."
             
             # Actualizar código en todas las tablas
-            cursor.execute("UPDATE productos SET codigo=?, nombre=?, precio=?, uxb=? WHERE codigo=?", 
-                          (codigo_nuevo, nombre, precio, uxb, codigo_original))
+            if imagen_base64:
+                cursor.execute("UPDATE productos SET codigo=?, nombre=?, precio=?, uxb=?, imagen=? WHERE codigo=?", 
+                              (codigo_nuevo, nombre, precio, uxb, imagen_base64, codigo_original))
+            else:
+                cursor.execute("UPDATE productos SET codigo=?, nombre=?, precio=?, uxb=? WHERE codigo=?", 
+                              (codigo_nuevo, nombre, precio, uxb, codigo_original))
+            
             cursor.execute("UPDATE lotes SET codigo_producto=? WHERE codigo_producto=?", 
                           (codigo_nuevo, codigo_original))
             cursor.execute("UPDATE conteos SET codigo_producto=? WHERE codigo_producto=?", 
@@ -481,9 +512,12 @@ def editar_producto():
             cursor.execute("UPDATE mermas SET codigo_producto=? WHERE codigo_producto=?", 
                           (codigo_nuevo, codigo_original))
         else:
-            # Solo actualizar datos
-            cursor.execute("UPDATE productos SET nombre=?, precio=?, uxb=? WHERE codigo=?", 
-                          (nombre, precio, uxb, codigo_original))
+            if imagen_base64:
+                cursor.execute("UPDATE productos SET nombre=?, precio=?, uxb=?, imagen=? WHERE codigo=?", 
+                              (nombre, precio, uxb, imagen_base64, codigo_original))
+            else:
+                cursor.execute("UPDATE productos SET nombre=?, precio=?, uxb=? WHERE codigo=?", 
+                              (nombre, precio, uxb, codigo_original))
         
         conn.commit()
         conn.close()

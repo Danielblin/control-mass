@@ -822,7 +822,7 @@
                 <h3><i class="fas fa-pencil-alt"></i> Editar producto</h3>
                 <button class="close-modal" onclick="cerrarModal('editar')"><i class="fas fa-times"></i></button>
             </div>
-            <form id="formEditarProducto" method="POST" action="/editar_producto">
+            <form id="formEditarProducto" method="POST" action="/editar_producto" enctype="multipart/form-data">
                 <input type="hidden" name="codigo_original" id="codigo_original">
                 <div class="form-group">
                     <label><i class="fas fa-barcode"></i> Código de barras</label>
@@ -839,6 +839,11 @@
                 <div class="form-group">
                     <label><i class="fas fa-cube"></i> UxB (Unidades por caja/paquete)</label>
                     <input type="text" name="uxb" id="edit_uxb" placeholder="Ej: CJ 24 UN">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Cambiar imagen</label>
+                    <input type="file" name="imagen" accept="image/*" capture="environment">
+                    <small style="color: #999; font-size: 0.7rem;">Dejar vacío para mantener la imagen actual</small>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%" onclick="return confirm('¿Confirmar cambios del producto?')">
                     <i class="fas fa-save"></i> Guardar cambios
@@ -951,14 +956,14 @@
         </div>
     </div>
 
-    <!-- MODAL: Agregar producto (CON CAMPO DE IMAGEN) -->
+        <!-- MODAL: Agregar producto (CON SUBIDA DE IMAGEN) -->
     <div id="modal-producto" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-plus-circle"></i> Agregar nuevo producto</h3>
                 <button class="close-modal" onclick="cerrarModal('producto')"><i class="fas fa-times"></i></button>
             </div>
-            <form method="POST" action="/agregar_producto">
+            <form method="POST" action="/agregar_producto" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Código de barras</label>
                     <input type="text" name="codigo" placeholder="Ej: 7750243082365" required>
@@ -976,8 +981,9 @@
                     <input type="text" name="uxb" placeholder="Ej: CJ 24 UN">
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-image"></i> URL de la imagen</label>
-                    <input type="text" name="imagen" placeholder="https://ejemplo.com/imagen.jpg">
+                    <label><i class="fas fa-image"></i> Imagen del producto</label>
+                    <input type="file" name="imagen" accept="image/*" capture="environment">
+                    <small style="color: #999; font-size: 0.7rem;">Puedes tomar una foto o seleccionar una imagen</small>
                 </div>
                 <input type="hidden" name="pasillo" value="{{ pasillo }}">
                 <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-save"></i> Agregar producto</button>
